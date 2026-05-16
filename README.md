@@ -1,6 +1,6 @@
 # AI Media Agent
 
-목표: 사용자는 매주 승인/보류/삭제만 하고, AI agent가 고수익 콘텐츠 주제 선정·제작·검수·보고를 수행하는 자동화 골격.
+목표: 사용자는 매주 승인/보류/거절만 하고, AI agent가 고수익 콘텐츠 주제 선정·제작·검수·보고를 수행하는 자동화 골격.
 
 현재 버전은 **mock mode**다. OpenAI API 키, YouTube API 키, Google Sheets 연결 없이 n8n workflow 구조와 승인 큐를 먼저 확인한다.
 
@@ -16,25 +16,30 @@ docker run --rm hello-world
 
 ---
 
-## 1. 설치 위치
-
-이 패키지 내용을 아래 폴더에 복사한다.
+## 1. 로컬로 받기
 
 ```powershell
-C:\codetest\ai_media_agent
+cd C:\codetest
+git clone https://github.com/shopper12/ai_media_agent.git
+cd C:\codetest\ai_media_agent
 ```
 
-이미 같은 폴더가 있으면 기존 파일 백업 후 덮어쓴다.
+이미 폴더가 있으면:
+
+```powershell
+cd C:\codetest\ai_media_agent
+git pull
+```
 
 ---
 
 ## 2. n8n 실행
 
-PowerShell에서:
-
 ```powershell
 cd C:\codetest\ai_media_agent
-.\scripts\start.ps1
+copy .env.example .env
+docker compose up -d
+docker ps
 ```
 
 정상 실행 후 브라우저에서:
@@ -53,69 +58,61 @@ n8n 접속 후 아래 문서대로 workflow JSON을 import한다.
 docs/n8n_import.md
 ```
 
----
-
-## 4. mock 승인 큐 대시보드 생성
-
-PowerShell:
-
-```powershell
-cd C:\codetest\ai_media_agent
-.\scripts\generate-mock-dashboard.ps1
-```
-
-생성 파일:
+현재 업로드된 workflow:
 
 ```text
-data/approval_queue.csv
-data/approval_queue.json
-data/dashboard.html
-data/weekly_report.md
+n8n/workflows/01_mock_ai_tools_topic_scoring.json
+n8n/workflows/02_mock_content_approval_queue.json
+n8n/workflows/03_mock_weekly_report.json
 ```
-
-브라우저에서 `data/dashboard.html`을 열어 승인 큐를 확인한다.
 
 ---
 
-## 5. 네가 할 일
+## 4. 승인 큐
 
-승인 큐의 `OwnerDecision`에 아래 중 하나만 입력한다.
+기본 승인 큐 템플릿:
+
+```text
+data/approval_queue_template.csv
+```
+
+OwnerDecision 값은 아래 중 하나로만 쓴다.
 
 ```text
 APPROVE
 HOLD
-DELETE
+REJECT
 ```
 
 ---
 
-## 6. 오류 로그
+## 5. 로그 확인
 
 ```powershell
 cd C:\codetest\ai_media_agent
-.\scripts\logs.ps1
+docker compose ps
+docker compose logs n8n --tail=150
 ```
 
 ---
 
-## 7. 중지
+## 6. 중지
 
 ```powershell
 cd C:\codetest\ai_media_agent
-.\scripts\stop.ps1
+docker compose down
 ```
 
 ---
 
-## 8. 현재 범위
+## 7. 현재 범위
 
 현재 mock mode는 다음만 수행한다.
 
-- 고수익 주제 mock scoring
-- 콘텐츠 초안 mock generation
-- AI 검수 mock flagging
-- 승인 큐 생성
-- 주간 보고서 생성
+- AI툴/SaaS 주제 mock scoring
+- 콘텐츠 승인 큐 mock generation
+- 주간 보고서 mock generation
+- approval queue 템플릿 제공
 
 실제 외부 API 연결은 다음 단계다.
 
