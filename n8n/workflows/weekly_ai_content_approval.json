@@ -1,0 +1,29 @@
+{
+  "name": "Weekly AI Content Approval Mock",
+  "nodes": [
+    {
+      "parameters": {},
+      "id": "manual-trigger",
+      "name": "Manual Trigger",
+      "type": "n8n-nodes-base.manualTrigger",
+      "typeVersion": 1,
+      "position": [-420, 0]
+    },
+    {
+      "parameters": {
+        "jsCode": "const now = new Date().toLocaleString('ko-KR', { timeZone: 'Asia/Seoul' });\nreturn [\n  { json: { section: 'topic_scoring', id: 'TOPIC-001', category: 'AI Tools', title: 'Compare five AI tools for office work', expectedProfitScore: 92, riskFlag: 'affiliate disclosure', createdAt: now } },\n  { json: { section: 'approval_queue', contentId: 'CONTENT-001', title: 'Compare five AI tools for office work', format: 'Shorts and Blog', status: 'READY_FOR_OWNER_APPROVAL', ownerDecision: '', createdAt: now } },\n  { json: { section: 'weekly_report', summary: 'Mock weekly owner report generated.', bestCategory: 'AI Tools', nextAction: 'Review approval queue', createdAt: now } }\n];"
+      },
+      "id": "weekly-mock-output",
+      "name": "Weekly Mock Output",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [-120, 0]
+    }
+  ],
+  "connections": {
+    "Manual Trigger": {
+      "main": [[{"node":"Weekly Mock Output","type":"main","index":0}]]
+    }
+  },
+  "settings": {"executionOrder":"v1"}
+}
