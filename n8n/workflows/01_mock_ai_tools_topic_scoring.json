@@ -1,0 +1,29 @@
+{
+  "name": "01 Mock AI Tools Topic Scoring",
+  "nodes": [
+    {
+      "parameters": {},
+      "id": "manual-trigger",
+      "name": "Manual Trigger",
+      "type": "n8n-nodes-base.manualTrigger",
+      "typeVersion": 1,
+      "position": [-420, 0]
+    },
+    {
+      "parameters": {
+        "jsCode": "const now = new Date().toISOString();\nconst topics = [\n  {id:'TOPIC-001', category:'AI Tools', title:'Compare five AI tools for office work', score:92, riskFlag:'affiliate disclosure'},\n  {id:'TOPIC-002', category:'AI Tools', title:'Best tools for automatic meeting notes', score:88, riskFlag:'price check'},\n  {id:'TOPIC-003', category:'AI Tools', title:'AI video tools for short-form creators', score:86, riskFlag:'license check'}\n];\nreturn topics.map(t => ({ json: { ...t, createdAt: now }}));"
+      },
+      "id": "mock-score-topics",
+      "name": "Mock Score Topics",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [-120, 0]
+    }
+  ],
+  "connections": {
+    "Manual Trigger": {
+      "main": [[{"node":"Mock Score Topics","type":"main","index":0}]]
+    }
+  },
+  "settings": {"executionOrder":"v1"}
+}
