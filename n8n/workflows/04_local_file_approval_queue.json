@@ -1,0 +1,56 @@
+{
+  "name": "04 Local File Approval Queue Mock",
+  "nodes": [
+    {
+      "parameters": {},
+      "id": "manual-trigger",
+      "name": "Manual Trigger",
+      "type": "n8n-nodes-base.manualTrigger",
+      "typeVersion": 1,
+      "position": [-620, 0]
+    },
+    {
+      "parameters": {
+        "jsCode": "const now = new Date().toLocaleString('ko-KR', { timeZone: 'Asia/Seoul' });\nconst rows = [\n  { contentId: 'CONTENT-001', topicId: 'TOPIC-001', category: 'AI Tools', expectedProfitScore: 92, title: 'Compare five AI tools for office work', format: 'Shorts and Blog', riskFlag: 'affiliate disclosure', aiReviewScore: 88, approvalStatus: 'READY_FOR_OWNER_APPROVAL', ownerDecision: '', cta: 'comparison sheet', createdAt: now, publishedAt: '', resultUrl: '' },\n  { contentId: 'CONTENT-002', topicId: 'TOPIC-002', category: 'AI Tools', expectedProfitScore: 88, title: 'Best tools for automatic meeting notes', format: 'Blog', riskFlag: 'price check', aiReviewScore: 86, approvalStatus: 'READY_FOR_OWNER_APPROVAL', ownerDecision: '', cta: 'tool list', createdAt: now, publishedAt: '', resultUrl: '' },\n  { contentId: 'CONTENT-003', topicId: 'TOPIC-003', category: 'AI Tools', expectedProfitScore: 86, title: 'AI video tools for short-form creators', format: 'Shorts', riskFlag: 'license check', aiReviewScore: 84, approvalStatus: 'OWNER_REVIEW_REQUIRED', ownerDecision: '', cta: 'creator checklist', createdAt: now, publishedAt: '', resultUrl: '' }\n];\nreturn [{ json: { fileName: 'approval_queue.json', rows } }];"
+      },
+      "id": "build-approval-queue",
+      "name": "Build Approval Queue",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [-360, 0]
+    },
+    {
+      "parameters": {
+        "jsCode": "const item = $input.first().json;\nreturn [{ json: {}, binary: { data: { data: Buffer.from(JSON.stringify(item.rows, null, 2)).toString('base64'), mimeType: 'application/json', fileName: item.fileName } } }];"
+      },
+      "id": "make-json-binary",
+      "name": "Make JSON Binary",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [-100, 0]
+    },
+    {
+      "parameters": {
+        "fileName": "/files/data/approval_queue.json",
+        "dataPropertyName": "data"
+      },
+      "id": "write-file",
+      "name": "Write Approval Queue File",
+      "type": "n8n-nodes-base.writeBinaryFile",
+      "typeVersion": 1,
+      "position": [180, 0]
+    }
+  ],
+  "connections": {
+    "Manual Trigger": {
+      "main": [[{"node":"Build Approval Queue","type":"main","index":0}]]
+    },
+    "Build Approval Queue": {
+      "main": [[{"node":"Make JSON Binary","type":"main","index":0}]]
+    },
+    "Make JSON Binary": {
+      "main": [[{"node":"Write Approval Queue File","type":"main","index":0}]]
+    }
+  },
+  "settings": {"executionOrder":"v1"}
+}
