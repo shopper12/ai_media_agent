@@ -1,0 +1,29 @@
+{
+  "name": "02 Mock Content Approval Queue",
+  "nodes": [
+    {
+      "parameters": {},
+      "id": "manual-trigger",
+      "name": "Manual Trigger",
+      "type": "n8n-nodes-base.manualTrigger",
+      "typeVersion": 1,
+      "position": [-420, 0]
+    },
+    {
+      "parameters": {
+        "jsCode": "const now = new Date().toISOString();\nconst rows = [\n  {contentId:'CONTENT-001', topicId:'TOPIC-001', category:'AI Tools', title:'Compare five AI tools for office work', format:'Shorts and Blog', score:92, status:'READY_FOR_OWNER_APPROVAL', ownerDecision:''},\n  {contentId:'CONTENT-002', topicId:'TOPIC-002', category:'AI Tools', title:'Best tools for automatic meeting notes', format:'Blog', score:88, status:'READY_FOR_OWNER_APPROVAL', ownerDecision:''},\n  {contentId:'CONTENT-003', topicId:'TOPIC-003', category:'AI Tools', title:'AI video tools for short-form creators', format:'Shorts', score:86, status:'OWNER_REVIEW_REQUIRED', ownerDecision:''}\n];\nreturn rows.map(r => ({ json: { ...r, createdAt: now }}));"
+      },
+      "id": "mock-approval-queue",
+      "name": "Mock Approval Queue",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [-120, 0]
+    }
+  ],
+  "connections": {
+    "Manual Trigger": {
+      "main": [[{"node":"Mock Approval Queue","type":"main","index":0}]]
+    }
+  },
+  "settings": {"executionOrder":"v1"}
+}
