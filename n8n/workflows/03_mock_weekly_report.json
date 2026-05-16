@@ -1,0 +1,29 @@
+{
+  "name": "03 Mock Weekly Report",
+  "nodes": [
+    {
+      "parameters": {},
+      "id": "manual-trigger",
+      "name": "Manual Trigger",
+      "type": "n8n-nodes-base.manualTrigger",
+      "typeVersion": 1,
+      "position": [-420, 0]
+    },
+    {
+      "parameters": {
+        "jsCode": "const now = new Date().toLocaleString('ko-KR', { timeZone: 'Asia/Seoul' });\nreturn [{ json: { generatedAt: now, summary: 'Mock weekly owner report generated.', bestCategory: 'AI Tools', item1: 'Compare five AI tools for office work', item2: 'Best tools for automatic meeting notes', item3: 'AI video tools for short-form creators' } }];"
+      },
+      "id": "mock-weekly-report",
+      "name": "Mock Weekly Report",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [-120, 0]
+    }
+  ],
+  "connections": {
+    "Manual Trigger": {
+      "main": [[{"node":"Mock Weekly Report","type":"main","index":0}]]
+    }
+  },
+  "settings": {"executionOrder":"v1"}
+}
