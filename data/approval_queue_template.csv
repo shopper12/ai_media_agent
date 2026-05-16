@@ -1,0 +1,4 @@
+ContentId,TopicId,Category,ExpectedProfitScore,Title,Format,RiskFlag,AIReviewScore,ApprovalStatus,OwnerDecision,CTA,CreatedAt,PublishedAt,ResultUrl
+CONTENT-001,TOPIC-001,AI Tools,92,Compare five AI tools for office work,Shorts+Blog,affiliate disclosure,88,READY_FOR_OWNER_APPROVAL,,comparison sheet,,,
+CONTENT-002,TOPIC-002,AI Tools,88,Best tools for automatic meeting notes,Blog,price check,86,READY_FOR_OWNER_APPROVAL,,tool list,,,
+CONTENT-003,TOPIC-003,AI Tools,86,AI video tools for short-form creators,Shorts,license check,84,OWNER_REVIEW_REQUIRED,,creator checklist,,,
