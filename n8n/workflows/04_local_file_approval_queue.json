@@ -31,7 +31,7 @@
     },
     {
       "parameters": {
-        "fileName": "/files/data/approval_queue.json",
+        "fileName": "/files/out/approval_queue.json",
         "dataPropertyName": "data"
       },
       "id": "write-file",
