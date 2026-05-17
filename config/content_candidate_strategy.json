@@ -1,0 +1,47 @@
+{
+  "project_goal": "Generate monetizable content candidates that the owner can approve, hold, or reject.",
+  "target_horizon_years": 5,
+  "content_language": "Korean",
+  "primary_monetization": [
+    "affiliate comparison",
+    "lead magnet",
+    "paid template",
+    "tool review",
+    "newsletter funnel",
+    "future digital product"
+  ],
+  "audience_categories": [
+    {
+      "category": "AI Tools",
+      "spending_motives": ["save time", "reduce repetitive work", "increase side income", "office productivity"],
+      "formats": ["Shorts", "Blog", "Comparison Sheet"]
+    },
+    {
+      "category": "Personal Finance",
+      "spending_motives": ["avoid loss", "increase income", "automate tracking", "compare financial products"],
+      "formats": ["Blog", "Checklist", "Shorts"]
+    },
+    {
+      "category": "Health Routine",
+      "spending_motives": ["reduce pain", "improve posture", "sleep recovery", "low-effort routines"],
+      "formats": ["Shorts", "Checklist", "Routine Card"]
+    },
+    {
+      "category": "Work Automation",
+      "spending_motives": ["reduce admin work", "automate reports", "connect apps", "avoid mistakes"],
+      "formats": ["Blog", "Template", "Workflow Guide"]
+    },
+    {
+      "category": "Digital Productivity",
+      "spending_motives": ["organize knowledge", "study faster", "write faster", "manage tasks"],
+      "formats": ["Shorts", "Blog", "Template"]
+    }
+  ],
+  "candidate_rules": {
+    "max_new_candidates_per_run": 5,
+    "min_expected_profit_score": 75,
+    "avoid_promises": ["guaranteed income", "guaranteed cure", "risk-free investment"],
+    "owner_decision_initial_value": "",
+    "approval_status_initial_value": "READY_FOR_OWNER_APPROVAL"
+  }
+}
