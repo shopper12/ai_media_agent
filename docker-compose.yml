@@ -15,10 +15,10 @@ services:
       - N8N_DIAGNOSTICS_ENABLED=false
       - N8N_PERSONALIZATION_ENABLED=false
       - N8N_ENFORCE_SETTINGS_FILE_PERMISSIONS=true
-      - N8N_RESTRICT_FILE_ACCESS_TO=/files/data:/files/workflows:/home/node/.n8n
+      - N8N_RESTRICT_FILE_ACCESS_TO=/files
     volumes:
       - n8n_data:/home/node/.n8n
       - ./n8n/workflows:/files/workflows
-      - ./data:/files/data
+      - ./n8n-files:/files/out
 volumes:
   n8n_data:
