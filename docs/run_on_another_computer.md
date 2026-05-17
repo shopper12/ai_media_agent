@@ -1,10 +1,10 @@
 # Run this project on another computer
 
-This project separates portable files from local secrets.
+This repository is a private personal repo, but keep a hard separation between portable source files and secrets.
 
-## Portable through GitHub
+## Source of truth in GitHub
 
-These are synced through GitHub:
+These should be managed through GitHub:
 
 ```text
 docker-compose.yml
@@ -13,41 +13,26 @@ n8n/workflows/*.json
 docs/*.md
 ```
 
-## Not portable through GitHub
+## Secrets and local state
 
-These must be recreated on each computer:
+These should not be committed as plain text, even in a private repo:
 
 ```text
 .env
+Google service account JSON
+Gemini API key
+OpenAI API key
 n8n credentials
-Google account login
-Google Gemini(PaLM) Api credential
-Google Sheets credential
-Docker volume n8n_data
+n8n_data Docker volume
 ```
 
-Do not commit secrets.
+Reason: private repos can still leak through account compromise, accidental sharing, cloned PCs, token exposure, or later public conversion.
 
 ---
 
-## Recommended clean setup on a new computer
+## Recommended setup for another computer
 
-### 1. Install prerequisites
-
-```text
-Git
-Docker Desktop
-```
-
-Docker must be running.
-
-Check:
-
-```powershell
-docker run --rm hello-world
-```
-
-### 2. Clone repo
+### 1. Clone or update repo
 
 ```powershell
 cd C:\codetest
@@ -55,23 +40,23 @@ git clone https://github.com/shopper12/ai_media_agent.git
 cd C:\codetest\ai_media_agent
 ```
 
-If repo already exists:
+If it already exists:
 
 ```powershell
 cd C:\codetest\ai_media_agent
 git pull
 ```
 
-### 3. Create local env file
+### 2. Create local env file
 
 ```powershell
 copy .env.example .env
 notepad .env
 ```
 
-Fill only what is needed locally. Do not commit `.env`.
+Do not commit `.env`.
 
-### 4. Start n8n
+### 3. Start n8n
 
 ```powershell
 docker compose up -d --force-recreate
@@ -83,9 +68,9 @@ Open:
 http://localhost:5678
 ```
 
-### 5. Recreate n8n credentials
+### 4. Recreate credentials on that computer
 
-Create these credentials manually in n8n:
+Create these in n8n:
 
 ```text
 Google Sheets account
@@ -104,17 +89,15 @@ Google Sheets credential:
 Credentials → Google Sheets OAuth2 API
 ```
 
-or the working Google Sheets credential type used on the original machine.
+### 5. Import workflow
 
-### 6. Import workflow
-
-Import the current end-to-end workflow:
+Import:
 
 ```text
 C:\codetest\ai_media_agent\n8n\workflows\10_approved_sheet_to_gemini_to_sheet.json
 ```
 
-Then open these nodes and select local credentials:
+Then open these nodes and select credentials:
 
 ```text
 Read Approved Rows → Google Sheets account
@@ -122,31 +105,42 @@ Gemini Message Model → Google Gemini(PaLM) Api account
 Update Draft To Sheet → Google Sheets account
 ```
 
-### 7. Execute
+---
 
-Run:
+## If you want fewer manual steps
+
+There are two safer options than committing plaintext secrets.
+
+### Option A: Fixed n8n encryption key + volume migration
+
+Use the same `N8N_ENCRYPTION_KEY` on every computer and migrate the n8n database/volume.
+
+This can preserve credentials, but it is more fragile.
+
+### Option B: Encrypted secret files in repo
+
+Store secrets only in encrypted form, for example:
 
 ```text
-10 Approved Sheet To Gemini To Sheet
+secrets.enc.json
 ```
 
-Expected result:
-
-```text
-OwnerDecision = APPROVE rows are read from Google Sheets.
-Gemini generates draft fields.
-The same Google Sheet row is updated.
-```
+Decrypt locally after cloning. Do not commit decrypted files.
 
 ---
 
-## Full migration option
+## Current recommendation
 
-If you want another computer to have the same n8n internal workflows and credentials without recreating them, migrate the Docker volume. This requires a fixed `N8N_ENCRYPTION_KEY`; otherwise credentials may not decrypt correctly on another machine.
-
-This is not the recommended path for now. The recommended path is:
+For now:
 
 ```text
-GitHub for workflow files
-Recreate credentials per computer
+GitHub stores workflows and project files.
+Each computer recreates n8n credentials once.
+```
+
+When the workflow stabilizes, move to one of these:
+
+```text
+fixed N8N_ENCRYPTION_KEY + volume backup
+or encrypted secrets file
 ```
