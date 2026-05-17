@@ -1,0 +1,199 @@
+{
+  "name": "10 Approved Sheet To Gemini To Sheet",
+  "nodes": [
+    {
+      "parameters": {},
+      "id": "manual-trigger",
+      "name": "Manual Trigger",
+      "type": "n8n-nodes-base.manualTrigger",
+      "typeVersion": 1,
+      "position": [-1100, 0]
+    },
+    {
+      "parameters": {
+        "resource": "sheet",
+        "operation": "read",
+        "documentId": {
+          "__rl": true,
+          "value": "1dMYlR9HA4dCCb9uGU8iFinhPsr7h-jKyfXf3BHh004w",
+          "mode": "id",
+          "cachedResultName": "AI Media Approval Queue",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1dMYlR9HA4dCCb9uGU8iFinhPsr7h-jKyfXf3BHh004w/edit"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": "sheet1",
+          "mode": "name",
+          "cachedResultName": "sheet1"
+        },
+        "filtersUI": {
+          "values": [
+            {
+              "lookupColumn": "OwnerDecision",
+              "lookupValue": "APPROVE"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "id": "read-approved-rows",
+      "name": "Read Approved Rows",
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.7,
+      "position": [-860, 0],
+      "credentials": {
+        "googleSheetsOAuth2Api": {
+          "id": "REPLACE_IN_N8N",
+          "name": "Google Sheets account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "jsCode": "return $input.all().map(item => {\n  const row = item.json;\n  const draftPrompt = `너는 한국어 콘텐츠 초안 작성자다. 아래 승인된 콘텐츠 후보를 바탕으로 쇼츠와 블로그에 모두 쓸 수 있는 초안을 작성해라.\\n\\nContentId: ${row.ContentId}\\nCategory: ${row.Category}\\nTitle: ${row.Title}\\nFormat: ${row.Format}\\nRiskFlag: ${row.RiskFlag}\\nCTA: ${row.CTA}\\n\\n출력 형식은 반드시 아래 JSON만 반환해라. 마크다운 코드블록은 쓰지 마라.\\n{\\n  \"DraftHook\": \"...\",\\n  \"DraftBody\": \"...\",\\n  \"DraftCTA\": \"...\",\\n  \"RiskReviewStatus\": \"LOW_RISK 또는 DISCLOSURE_REQUIRED\",\\n  \"FinalStatus\": \"DRAFT_READY\"\\n}\\n\\n요구사항:\\n1. 한국어로 작성한다.\\n2. 과장 수익 보장 표현은 금지한다.\\n3. 제휴 가능성이 있으면 고지 문구를 포함한다.\\n4. 실무자가 바로 읽고 쓸 수 있게 구체적으로 작성한다.`;\n  return { json: { ...row, draftPrompt, SourceRowNumber: row.row_number } };\n});"
+      },
+      "id": "build-gemini-prompt",
+      "name": "Build Gemini Prompt",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [-610, 0]
+    },
+    {
+      "parameters": {
+        "resource": "text",
+        "operation": "message",
+        "modelId": {
+          "__rl": true,
+          "value": "models/gemini-2.5-flash",
+          "mode": "id",
+          "cachedResultName": "models/gemini-2.5-flash"
+        },
+        "messages": {
+          "values": [
+            {
+              "content": "={{ $json.draftPrompt }}",
+              "role": "user"
+            }
+          ]
+        },
+        "simplify": true,
+        "jsonOutput": true,
+        "builtInTools": {},
+        "options": {
+          "system": "Return Korean JSON only. Do not include markdown code fences. Avoid unsupported guarantees. Include disclosure wording if RiskFlag requires it."
+        }
+      },
+      "id": "gemini-message-model",
+      "name": "Gemini Message Model",
+      "type": "@n8n/n8n-nodes-langchain.googleGemini",
+      "typeVersion": 1.1,
+      "position": [-350, 0],
+      "credentials": {
+        "googlePalmApi": {
+          "id": "REPLACE_IN_N8N",
+          "name": "Google Gemini(PaLM) Api account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "jsCode": "return $input.all().map((item, index) => {\n  const originalItems = $('Build Gemini Prompt').all();\n  const original = originalItems[index]?.json || {};\n  const res = item.json;\n  const text = res.text || res.output || res.content?.parts?.[0]?.text || res.candidates?.[0]?.content?.parts?.[0]?.text || res.response || JSON.stringify(res);\n  let parsed = {};\n  try {\n    const cleaned = String(text).replace(/^```json\\s*/i, '').replace(/^```\\s*/i, '').replace(/```$/i, '').trim();\n    parsed = JSON.parse(cleaned);\n  } catch (e) {\n    parsed = { DraftHook: '', DraftBody: String(text), DraftCTA: '', RiskReviewStatus: 'REVIEW_REQUIRED', FinalStatus: 'DRAFT_READY_PARSE_FAILED' };\n  }\n  return { json: {\n    ContentId: original.ContentId,\n    TopicId: original.TopicId,\n    Category: original.Category,\n    ExpectedProfitScore: original.ExpectedProfitScore,\n    Title: original.Title,\n    Format: original.Format,\n    RiskFlag: original.RiskFlag,\n    AIReviewScore: original.AIReviewScore,\n    ApprovalStatus: original.ApprovalStatus,\n    OwnerDecision: original.OwnerDecision,\n    CTA: original.CTA,\n    CreatedAt: original.CreatedAt,\n    PublishedAt: original.PublishedAt || '',\n    ResultUrl: original.ResultUrl || '',\n    DraftHook: parsed.DraftHook || '',\n    DraftBody: parsed.DraftBody || String(text),\n    DraftCTA: parsed.DraftCTA || '',\n    RiskReviewStatus: parsed.RiskReviewStatus || 'REVIEW_REQUIRED',\n    GeneratedAt: new Date().toLocaleString('ko-KR', { timeZone: 'Asia/Seoul' }),\n    FinalStatus: parsed.FinalStatus || 'DRAFT_READY'\n  } };\n});"
+      },
+      "id": "parse-gemini-output",
+      "name": "Parse Gemini Output",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [-90, 0]
+    },
+    {
+      "parameters": {
+        "operation": "appendOrUpdate",
+        "documentId": {
+          "__rl": true,
+          "value": "1dMYlR9HA4dCCb9uGU8iFinhPsr7h-jKyfXf3BHh004w",
+          "mode": "id",
+          "cachedResultName": "AI Media Approval Queue",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1dMYlR9HA4dCCb9uGU8iFinhPsr7h-jKyfXf3BHh004w/edit"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": "sheet1",
+          "mode": "name",
+          "cachedResultName": "sheet1"
+        },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "ContentId": "={{ $json.ContentId }}",
+            "TopicId": "={{ $json.TopicId }}",
+            "Category": "={{ $json.Category }}",
+            "ExpectedProfitScore": "={{ $json.ExpectedProfitScore }}",
+            "Title": "={{ $json.Title }}",
+            "Format": "={{ $json.Format }}",
+            "RiskFlag": "={{ $json.RiskFlag }}",
+            "AIReviewScore": "={{ $json.AIReviewScore }}",
+            "ApprovalStatus": "={{ $json.ApprovalStatus }}",
+            "OwnerDecision": "={{ $json.OwnerDecision }}",
+            "CTA": "={{ $json.CTA }}",
+            "CreatedAt": "={{ $json.CreatedAt }}",
+            "PublishedAt": "={{ $json.PublishedAt }}",
+            "ResultUrl": "={{ $json.ResultUrl }}",
+            "DraftHook": "={{ $json.DraftHook }}",
+            "DraftBody": "={{ $json.DraftBody }}",
+            "DraftCTA": "={{ $json.DraftCTA }}",
+            "RiskReviewStatus": "={{ $json.RiskReviewStatus }}",
+            "GeneratedAt": "={{ $json.GeneratedAt }}",
+            "FinalStatus": "={{ $json.FinalStatus }}"
+          },
+          "matchingColumns": [
+            "ContentId"
+          ],
+          "schema": [
+            { "id": "ContentId", "displayName": "ContentId", "required": false, "defaultMatch": true, "display": true, "type": "string", "canBeUsedToMatch": true },
+            { "id": "TopicId", "displayName": "TopicId", "required": false, "defaultMatch": false, "display": true, "type": "string", "canBeUsedToMatch": false },
+            { "id": "Category", "displayName": "Category", "required": false, "defaultMatch": false, "display": true, "type": "string", "canBeUsedToMatch": false },
+            { "id": "ExpectedProfitScore", "displayName": "ExpectedProfitScore", "required": false, "defaultMatch": false, "display": true, "type": "number", "canBeUsedToMatch": false },
+            { "id": "Title", "displayName": "Title", "required": false, "defaultMatch": false, "display": true, "type": "string", "canBeUsedToMatch": false },
+            { "id": "Format", "displayName": "Format", "required": false, "defaultMatch": false, "display": true, "type": "string", "canBeUsedToMatch": false },
+            { "id": "RiskFlag", "displayName": "RiskFlag", "required": false, "defaultMatch": false, "display": true, "type": "string", "canBeUsedToMatch": false },
+            { "id": "AIReviewScore", "displayName": "AIReviewScore", "required": false, "defaultMatch": false, "display": true, "type": "number", "canBeUsedToMatch": false },
+            { "id": "ApprovalStatus", "displayName": "ApprovalStatus", "required": false, "defaultMatch": false, "display": true, "type": "string", "canBeUsedToMatch": false },
+            { "id": "OwnerDecision", "displayName": "OwnerDecision", "required": false, "defaultMatch": false, "display": true, "type": "string", "canBeUsedToMatch": false },
+            { "id": "CTA", "displayName": "CTA", "required": false, "defaultMatch": false, "display": true, "type": "string", "canBeUsedToMatch": false },
+            { "id": "CreatedAt", "displayName": "CreatedAt", "required": false, "defaultMatch": false, "display": true, "type": "string", "canBeUsedToMatch": false },
+            { "id": "PublishedAt", "displayName": "PublishedAt", "required": false, "defaultMatch": false, "display": true, "type": "string", "canBeUsedToMatch": false },
+            { "id": "ResultUrl", "displayName": "ResultUrl", "required": false, "defaultMatch": false, "display": true, "type": "string", "canBeUsedToMatch": false },
+            { "id": "DraftHook", "displayName": "DraftHook", "required": false, "defaultMatch": false, "display": true, "type": "string", "canBeUsedToMatch": false },
+            { "id": "DraftBody", "displayName": "DraftBody", "required": false, "defaultMatch": false, "display": true, "type": "string", "canBeUsedToMatch": false },
+            { "id": "DraftCTA", "displayName": "DraftCTA", "required": false, "defaultMatch": false, "display": true, "type": "string", "canBeUsedToMatch": false },
+            { "id": "RiskReviewStatus", "displayName": "RiskReviewStatus", "required": false, "defaultMatch": false, "display": true, "type": "string", "canBeUsedToMatch": false },
+            { "id": "GeneratedAt", "displayName": "GeneratedAt", "required": false, "defaultMatch": false, "display": true, "type": "string", "canBeUsedToMatch": false },
+            { "id": "FinalStatus", "displayName": "FinalStatus", "required": false, "defaultMatch": false, "display": true, "type": "string", "canBeUsedToMatch": false }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        },
+        "options": {}
+      },
+      "id": "update-draft-to-sheet",
+      "name": "Update Draft To Sheet",
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.7,
+      "position": [200, 0],
+      "credentials": {
+        "googleSheetsOAuth2Api": {
+          "id": "REPLACE_IN_N8N",
+          "name": "Google Sheets account"
+        }
+      }
+    }
+  ],
+  "connections": {
+    "Manual Trigger": { "main": [[{"node":"Read Approved Rows","type":"main","index":0}]] },
+    "Read Approved Rows": { "main": [[{"node":"Build Gemini Prompt","type":"main","index":0}]] },
+    "Build Gemini Prompt": { "main": [[{"node":"Gemini Message Model","type":"main","index":0}]] },
+    "Gemini Message Model": { "main": [[{"node":"Parse Gemini Output","type":"main","index":0}]] },
+    "Parse Gemini Output": { "main": [[{"node":"Update Draft To Sheet","type":"main","index":0}]] }
+  },
+  "settings": {"executionOrder":"v1"}
+}
