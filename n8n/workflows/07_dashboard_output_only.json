@@ -1,0 +1,29 @@
+{
+  "name": "07 Dashboard Output Only",
+  "nodes": [
+    {
+      "parameters": {},
+      "id": "manual-trigger",
+      "name": "Manual Trigger",
+      "type": "n8n-nodes-base.manualTrigger",
+      "typeVersion": 1,
+      "position": [-500, 0]
+    },
+    {
+      "parameters": {
+        "jsCode": "const now = new Date().toLocaleString('ko-KR', { timeZone: 'Asia/Seoul' });\nconst rows = [\n  { contentId: 'CONTENT-001', category: 'AI Tools', score: 92, title: 'Compare five AI tools for office work', format: 'Shorts and Blog', risk: 'affiliate disclosure', status: 'READY', decision: '' },\n  { contentId: 'CONTENT-002', category: 'AI Tools', score: 88, title: 'Best tools for automatic meeting notes', format: 'Blog', risk: 'price check', status: 'READY', decision: '' },\n  { contentId: 'CONTENT-003', category: 'AI Tools', score: 86, title: 'AI video tools for short-form creators', format: 'Shorts', risk: 'license check', status: 'REVIEW', decision: '' }\n];\nreturn rows.map(row => ({ json: { ...row, generatedAt: now } }));"
+      },
+      "id": "build-dashboard-output",
+      "name": "Build Dashboard Output",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [-220, 0]
+    }
+  ],
+  "connections": {
+    "Manual Trigger": {
+      "main": [[{"node":"Build Dashboard Output","type":"main","index":0}]]
+    }
+  },
+  "settings": {"executionOrder":"v1"}
+}
