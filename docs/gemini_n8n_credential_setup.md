@@ -8,20 +8,37 @@ Open Google AI Studio and create an API key.
 
 ## 2. Create n8n credential
 
+In recent n8n versions, the credential display name is usually:
+
+```text
+Header Auth
+```
+
+not `HTTP Header Auth`.
+
 In n8n:
 
 ```text
 Credentials
 → Create credential
-→ HTTP Header Auth
+→ search: Header Auth
+```
+
+If it does not appear from the global Credentials menu, create it inside the HTTP Request node:
+
+```text
+HTTP Request node
+→ Authentication: Generic Credential Type
+→ Generic Auth Type: Header Auth
+→ Create new credential
 ```
 
 Set:
 
 ```text
-Name: Gemini API Key Header
-Header Name: x-goog-api-key
-Header Value: your Gemini API key
+Credential name: Gemini API Key Header
+Name: x-goog-api-key
+Value: your Gemini API key
 ```
 
 Save.
