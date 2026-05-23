@@ -77,7 +77,7 @@ def records_from_values(headers, values):
 def normalize_channel(raw, config):
     value = str(raw or "").strip()
     if not value:
-        return ""
+        return config.get("default_blog_channel", "NAVER_BLOG")
     if value in config["channels"]:
         return value
     mapped = config.get("legacy_channel_map", {}).get(value)
@@ -110,7 +110,9 @@ def media_status(record, channel, config):
     return "READY"
 
 
-def route_status(credential, media):
+def route_status(decision, credential, media):
+    if decision != "APPROVE":
+        return "WAITING_APPROVAL"
     if credential == "READY" and media in {"READY", "NOT_REQUIRED"}:
         return "READY_TO_PUBLISH"
     if credential.startswith("NEED_CREDENTIAL"):
@@ -120,6 +122,12 @@ def route_status(credential, media):
     if media == "NEED_MEDIA_FILE":
         return "NEED_MEDIA_FILE"
     return "BLOCKED"
+
+
+def upload_error(status):
+    if status in {"READY_TO_PUBLISH", "WAITING_APPROVAL"}:
+        return ""
+    return f"{status} at {now_kst()}"
 
 
 def update_row(service, headers, record, updates):
@@ -135,6 +143,10 @@ def update_row(service, headers, record, updates):
     ).execute()
 
 
+def should_route(record):
+    return bool(str(record.get("AssetId") or record.get("ContentId") or record.get("Title") or "").strip())
+
+
 def main():
     config = load_config()
     service = sheets_service()
@@ -147,24 +159,22 @@ def main():
 
     routed = 0
     for record in records:
-        decision = str(record.get("PublishDecision", "")).strip().upper()
-        if decision != "APPROVE":
+        if not should_route(record):
             continue
+        decision = str(record.get("PublishDecision", "")).strip().upper()
         channel = normalize_channel(record.get("PublishChannel"), config)
-        if not channel:
-            channel = config.get("default_blog_channel", "NAVER_BLOG")
         credential = credential_status(channel, config)
         media = media_status(record, channel, config)
-        status = route_status(credential, media)
+        status = route_status(decision, credential, media)
         update_row(service, headers, record, {
             "PublishChannel": channel,
             "CredentialStatus": credential,
             "MediaStatus": media,
             "ChannelStatus": status,
-            "UploadError": "" if status == "READY_TO_PUBLISH" else f"{status} at {now_kst()}",
+            "UploadError": upload_error(status),
         })
         routed += 1
-    print(f"routed approved assets: {routed}")
+    print(f"routed assets: {routed}")
 
 
 if __name__ == "__main__":
