@@ -1,0 +1,48 @@
+{
+  "project_goal": "Publish approved AI-generated assets to real audience channels, not developer test pages.",
+  "deprecated_targets": [
+    {
+      "target": "GitHub Pages",
+      "reason": "Developer test surface only; not a real Korean audience or SNS distribution channel. Private repository Pages can also create plan friction."
+    }
+  ],
+  "blog_primary_market_korea": {
+    "primary": "NAVER Blog",
+    "reason": "Most familiar domestic blog ecosystem for Korean users; should be treated as the main Korean blog distribution target.",
+    "automation_status": "requires channel-specific publishing method; official simple write API availability must be verified before implementation",
+    "fallbacks": ["Tistory", "WordPress"]
+  },
+  "video_channels_keep": [
+    {
+      "channel": "YouTube Shorts",
+      "automation_status": "requires Google OAuth and YouTube upload scope"
+    },
+    {
+      "channel": "Instagram Reels",
+      "automation_status": "requires Meta/Instagram content publishing permissions and eligible account type"
+    },
+    {
+      "channel": "TikTok",
+      "automation_status": "requires TikTok Content Posting API access"
+    }
+  ],
+  "pipeline": [
+    "generate_content_candidates",
+    "owner_approval",
+    "generate_gemini_drafts",
+    "final_owner_approval",
+    "generate_publish_assets",
+    "publish_to_real_channel",
+    "sync_publish_log",
+    "generate_performance_report",
+    "feed_results_back_to_strategy"
+  ],
+  "next_required_work": [
+    "Add channel credentials checklist",
+    "Add NAVER Blog publishing adapter or manual bridge if official write API is unavailable",
+    "Add YouTube Shorts upload adapter",
+    "Add Instagram Reels publishing adapter",
+    "Add TikTok publishing adapter",
+    "Keep Telegram only as optional notification/distribution, not as primary blog/SNS replacement"
+  ]
+}
