@@ -1,0 +1,62 @@
+{
+  "default_blog_channel": "NAVER_BLOG",
+  "channels": {
+    "NAVER_BLOG": {
+      "kind": "blog",
+      "korea_priority": 1,
+      "status": "planned",
+      "requires_local_session": true,
+      "required_secrets": [],
+      "required_local_setup": [
+        "NAVER account login session on local machine",
+        "local browser automation or n8n workflow"
+      ],
+      "allowed_asset_types": ["Blog"]
+    },
+    "YOUTUBE_SHORTS": {
+      "kind": "short_video",
+      "status": "planned",
+      "requires_media_file": true,
+      "required_secrets": [
+        "YOUTUBE_OAUTH_CLIENT_JSON",
+        "YOUTUBE_OAUTH_REFRESH_TOKEN",
+        "YOUTUBE_CHANNEL_ID"
+      ],
+      "allowed_asset_types": ["Shorts", "YouTube Shorts"]
+    },
+    "INSTAGRAM_REELS": {
+      "kind": "short_video",
+      "status": "planned",
+      "requires_media_file": true,
+      "required_secrets": [
+        "META_ACCESS_TOKEN",
+        "INSTAGRAM_ACCOUNT_ID",
+        "FACEBOOK_PAGE_ID"
+      ],
+      "allowed_asset_types": ["Shorts", "Instagram Reels"]
+    },
+    "TIKTOK": {
+      "kind": "short_video",
+      "status": "planned",
+      "requires_media_file": true,
+      "required_secrets": [
+        "TIKTOK_CLIENT_KEY",
+        "TIKTOK_CLIENT_SECRET",
+        "TIKTOK_ACCESS_TOKEN",
+        "TIKTOK_REFRESH_TOKEN"
+      ],
+      "allowed_asset_types": ["Shorts", "TikTok"]
+    }
+  },
+  "legacy_channel_map": {
+    "Blog": "NAVER_BLOG",
+    "NAVER": "NAVER_BLOG",
+    "Naver Blog": "NAVER_BLOG",
+    "Shorts": "YOUTUBE_SHORTS",
+    "YouTube": "YOUTUBE_SHORTS",
+    "YouTube Shorts": "YOUTUBE_SHORTS",
+    "Instagram": "INSTAGRAM_REELS",
+    "Instagram Reels": "INSTAGRAM_REELS",
+    "TikTok": "TIKTOK"
+  }
+}
