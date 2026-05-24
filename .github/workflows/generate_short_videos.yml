@@ -14,7 +14,9 @@ jobs:
     env:
       GOOGLE_SERVICE_ACCOUNT_JSON: ${{ secrets.GOOGLE_SERVICE_ACCOUNT_JSON }}
       SPREADSHEET_ID: ${{ secrets.SPREADSHEET_ID }}
+      GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY }}
       PUBLISH_ASSETS_SHEET_NAME: ${{ vars.PUBLISH_ASSETS_SHEET_NAME || 'publish_assets' }}
+      GEMINI_MODEL: ${{ vars.GEMINI_MODEL || 'gemini-2.5-flash' }}
       SHORT_VIDEO_OUT_DIR: generated/short_videos
     steps:
       - name: Checkout
@@ -30,6 +32,9 @@ jobs:
 
       - name: Install dependencies
         run: pip install -r requirements.txt
+
+      - name: Improve short video script quality
+        run: python scripts/enhance_short_video_assets.py
 
       - name: Generate short video files
         run: python scripts/generate_short_video_assets.py
