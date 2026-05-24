@@ -29,3 +29,6 @@ jobs:
 
       - name: Generate publish assets
         run: python scripts/generate_publish_assets.py
+
+      - name: Expand cross platform assets
+        run: python scripts/expand_cross_platform_assets.py
