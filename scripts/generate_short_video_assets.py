@@ -27,6 +27,14 @@ REQUIRED_COLUMNS = [
     "PlatformPostId",
     "PublishedAt",
     "UploadError",
+    "ScriptApprovalStatus",
+    "ShortsScriptJson",
+    "ThumbnailMainText",
+    "ThumbnailSubText",
+    "ShortsTitle",
+    "OnScreenTextOverlays",
+    "VideoDurationSec",
+    "VideoQualitySource",
 ]
 
 
@@ -98,7 +106,18 @@ def is_short_target(record):
 
 
 def selected(record):
-    return norm(record.get("PublishDecision")) == "APPROVE" and is_short_target(record) and not str(record.get("MediaFilePath", "")).strip()
+    if norm(record.get("PublishDecision")) != "APPROVE":
+        return False
+    if not is_short_target(record):
+        return False
+    if str(record.get("TargetUrl", "")).strip():
+        return False
+    if str(record.get("MediaFilePath", "")).strip():
+        return False
+    # New quality gate: do not render videos from unapproved or failed scripts.
+    if norm(record.get("ScriptApprovalStatus")) != "SCRIPT_APPROVED":
+        return False
+    return True
 
 
 def slugify(value):
@@ -118,79 +137,188 @@ def find_font():
     return None
 
 
+def text_width(draw, text, font):
+    bbox = draw.textbbox((0, 0), text, font=font)
+    return bbox[2] - bbox[0]
+
+
 def wrap_text(draw, text, font, max_width):
+    text = re.sub(r"\s+", " ", str(text or "")).strip()
+    if not text:
+        return []
     words = re.split(r"(\s+)", text)
     lines = []
     current = ""
     for word in words:
         trial = current + word
-        bbox = draw.textbbox((0, 0), trial, font=font)
-        if bbox[2] - bbox[0] <= max_width:
+        if text_width(draw, trial, font) <= max_width:
             current = trial
         else:
             if current.strip():
                 lines.append(current.strip())
-            current = word.strip()
+            if text_width(draw, word, font) <= max_width:
+                current = word.strip()
+            else:
+                buf = ""
+                for ch in word:
+                    trial_ch = buf + ch
+                    if text_width(draw, trial_ch, font) <= max_width:
+                        buf = trial_ch
+                    else:
+                        if buf:
+                            lines.append(buf)
+                        buf = ch
+                current = buf
     if current.strip():
         lines.append(current.strip())
     return lines
 
 
-def make_slide(record, out_png):
+def parse_seconds(value):
+    raw = str(value or "").replace("–", "-").replace("~", "-")
+    nums = [int(x) for x in re.findall(r"\d+", raw)]
+    if len(nums) >= 2 and nums[1] > nums[0]:
+        return max(2, min(20, nums[1] - nums[0]))
+    return 8
+
+
+def parse_script(record):
+    raw = str(record.get("ShortsScriptJson", "")).strip()
+    if raw:
+        try:
+            data = json.loads(raw)
+            if isinstance(data, list) and data:
+                return [
+                    {
+                        "second": str(item.get("second", "")),
+                        "line": str(item.get("line", "")),
+                        "visual_note": str(item.get("visual_note", "")),
+                    }
+                    for item in data
+                    if isinstance(item, dict) and str(item.get("line", "")).strip()
+                ]
+        except json.JSONDecodeError:
+            pass
+    fallback = []
+    if record.get("Body"):
+        fallback.append({"second": "0-4", "line": str(record.get("Title", ""))[:80], "visual_note": "제목 강조"})
+        body = re.sub(r"\s+", " ", str(record.get("Body", ""))).strip()
+        chunks = [body[i:i + 120] for i in range(0, min(len(body), 480), 120)]
+        for i, chunk in enumerate(chunks, start=1):
+            fallback.append({"second": f"{i*8}-{i*8+8}", "line": chunk, "visual_note": "핵심 내용"})
+        fallback.append({"second": "50-60", "line": str(record.get("Caption") or "저장해두면 나중에 찾기 편합니다.")[:120], "visual_note": "CTA"})
+    return fallback
+
+
+def draw_centered(draw, lines, font, x_center, y, max_lines, line_gap=18):
+    used = 0
+    for line in lines[:max_lines]:
+        bbox = draw.textbbox((0, 0), line, font=font)
+        width = bbox[2] - bbox[0]
+        draw.text((x_center - width / 2, y), line, fill="black", font=font)
+        y += (bbox[3] - bbox[1]) + line_gap
+        used += 1
+    return y, used
+
+
+def make_scene(record, scene, index, total, out_png):
     width, height = 1080, 1920
     image = Image.new("RGB", (width, height), "white")
     draw = ImageDraw.Draw(image)
     font_path = find_font()
-    title_font = ImageFont.truetype(font_path, 72) if font_path else ImageFont.load_default()
-    body_font = ImageFont.truetype(font_path, 48) if font_path else ImageFont.load_default()
+    title_font = ImageFont.truetype(font_path, 74) if font_path else ImageFont.load_default()
+    body_font = ImageFont.truetype(font_path, 66) if font_path else ImageFont.load_default()
     small_font = ImageFont.truetype(font_path, 34) if font_path else ImageFont.load_default()
+    label_font = ImageFont.truetype(font_path, 44) if font_path else ImageFont.load_default()
 
-    title = str(record.get("Title", ""))[:90]
-    body = str(record.get("Body") or record.get("Caption") or "")
-    body = re.sub(r"\s+", " ", body).strip()[:600]
-    tags = str(record.get("Tags", ""))[:140]
+    main = str(record.get("ThumbnailMainText") or record.get("ThumbnailText") or record.get("ShortsTitle") or record.get("Title") or "").strip()
+    sub = str(record.get("ThumbnailSubText") or record.get("ChosenHookPattern") or "").strip()
+    title = str(record.get("ShortsTitle") or record.get("Title") or "").strip()
+    line = str(scene.get("line", "")).strip()
+    note = str(scene.get("visual_note", "")).strip()
+    second = str(scene.get("second", "")).strip()
 
-    y = 180
-    draw.text((80, y), "AI TOOL SHORTS", fill="black", font=small_font)
-    y += 120
-    for line in wrap_text(draw, title, title_font, 920)[:4]:
-        draw.text((80, y), line, fill="black", font=title_font)
-        y += 90
-    y += 60
-    for line in wrap_text(draw, body, body_font, 920)[:11]:
-        draw.text((80, y), line, fill="black", font=body_font)
-        y += 66
-    draw.text((80, 1680), tags, fill="black", font=small_font)
-    draw.text((80, 1760), "Generated by AI Media Agent", fill="black", font=small_font)
+    draw.text((70, 70), f"SCENE {index + 1}/{total}", fill="black", font=small_font)
+    if second:
+        draw.text((760, 70), second, fill="black", font=small_font)
+
+    y = 210
+    if index == 0 and main:
+        y, _ = draw_centered(draw, wrap_text(draw, main, title_font, 900), title_font, width / 2, y, 3, 20)
+        if sub:
+            y += 30
+            y, _ = draw_centered(draw, wrap_text(draw, sub, label_font, 900), label_font, width / 2, y, 2, 16)
+        y += 100
+    else:
+        y, _ = draw_centered(draw, wrap_text(draw, title, label_font, 920), label_font, width / 2, y, 2, 16)
+        y += 120
+
+    y, _ = draw_centered(draw, wrap_text(draw, line, body_font, 900), body_font, width / 2, y, 7, 22)
+
+    if note:
+        bottom_lines = wrap_text(draw, note, small_font, 860)
+        draw_centered(draw, bottom_lines, small_font, width / 2, 1540, 3, 12)
+
+    overlays = str(record.get("OnScreenTextOverlays", "")).strip()
+    if overlays:
+        try:
+            parsed = json.loads(overlays)
+            overlay_text = " · ".join(str(x) for x in parsed[:3]) if isinstance(parsed, list) else overlays
+        except json.JSONDecodeError:
+            overlay_text = overlays
+        draw_centered(draw, wrap_text(draw, overlay_text, small_font, 900), small_font, width / 2, 1740, 2, 12)
+
     image.save(out_png)
 
 
-def make_video(slide_png, out_mp4):
-    cmd = [
-        "ffmpeg",
-        "-y",
-        "-loop",
-        "1",
-        "-i",
-        str(slide_png),
-        "-f",
-        "lavfi",
-        "-i",
-        "anullsrc=channel_layout=stereo:sample_rate=44100",
-        "-t",
-        "12",
-        "-c:v",
-        "libx264",
-        "-pix_fmt",
-        "yuv420p",
-        "-vf",
-        "scale=1080:1920",
-        "-c:a",
-        "aac",
+def render_scene_png_to_mp4(scene_png, duration, scene_mp4):
+    subprocess.run([
+        "ffmpeg", "-y",
+        "-loop", "1",
+        "-i", str(scene_png),
+        "-f", "lavfi",
+        "-i", "anullsrc=channel_layout=stereo:sample_rate=44100",
+        "-t", str(duration),
+        "-c:v", "libx264",
+        "-pix_fmt", "yuv420p",
+        "-vf", "scale=1080:1920",
+        "-c:a", "aac",
         "-shortest",
+        str(scene_mp4),
+    ], check=True)
+
+
+def concat_videos(scene_files, out_mp4):
+    list_file = out_mp4.with_suffix(".concat.txt")
+    list_file.write_text("\n".join(f"file '{p.resolve()}'" for p in scene_files), encoding="utf-8")
+    subprocess.run([
+        "ffmpeg", "-y",
+        "-f", "concat",
+        "-safe", "0",
+        "-i", str(list_file),
+        "-c", "copy",
         str(out_mp4),
-    ]
-    subprocess.run(cmd, check=True)
+    ], check=True)
+
+
+def make_video(record, out_mp4):
+    scenes = parse_script(record)
+    if not scenes:
+        raise ValueError("ShortsScriptJson is empty or invalid")
+    work_dir = out_mp4.parent / f".{out_mp4.stem}_scenes"
+    work_dir.mkdir(parents=True, exist_ok=True)
+    scene_files = []
+    total_duration = 0
+    for idx, scene in enumerate(scenes[:8]):
+        duration = parse_seconds(scene.get("second"))
+        total_duration += duration
+        scene_png = work_dir / f"scene_{idx:02d}.png"
+        scene_mp4 = work_dir / f"scene_{idx:02d}.mp4"
+        make_scene(record, scene, idx, min(len(scenes), 8), scene_png)
+        render_scene_png_to_mp4(scene_png, duration, scene_mp4)
+        scene_files.append(scene_mp4)
+    concat_videos(scene_files, out_mp4)
+    return total_duration
 
 
 def main():
@@ -205,18 +333,28 @@ def main():
     OUT_DIR.mkdir(parents=True, exist_ok=True)
 
     made = 0
+    skipped = 0
+    for record in records:
+        if norm(record.get("PublishDecision")) == "APPROVE" and is_short_target(record) and not str(record.get("TargetUrl", "")).strip() and not selected(record):
+            if not str(record.get("MediaFilePath", "")).strip():
+                skipped += 1
+                update_row(service, headers, record, {
+                    "MediaStatus": "BLOCKED",
+                    "ChannelStatus": "SCRIPT_REQUIRED",
+                    "UploadError": "ScriptApprovalStatus must be SCRIPT_APPROVED before video rendering.",
+                })
     for record in targets:
         base = slugify(record.get("AssetId") or record.get("Title"))
-        slide_png = OUT_DIR / f"{base}.png"
         out_mp4 = OUT_DIR / f"{base}.mp4"
         try:
-            make_slide(record, slide_png)
-            make_video(slide_png, out_mp4)
+            duration = make_video(record, out_mp4)
             update_row(service, headers, record, {
                 "PublishChannel": "YOUTUBE_SHORTS",
                 "MediaFilePath": str(out_mp4),
                 "MediaStatus": "READY",
                 "ChannelStatus": "MEDIA_READY",
+                "VideoDurationSec": duration,
+                "VideoQualitySource": "SCRIPT_APPROVED_SCENE_RENDER",
                 "UploadError": "",
             })
             made += 1
@@ -227,7 +365,7 @@ def main():
                 "ChannelStatus": "FAILED",
                 "UploadError": str(exc)[:500],
             })
-    print(f"generated short videos: {made}")
+    print(f"generated short videos: {made}; blocked waiting for script approval: {skipped}")
 
 
 if __name__ == "__main__":
