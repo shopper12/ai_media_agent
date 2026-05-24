@@ -15,7 +15,7 @@
     },
     "YOUTUBE_SHORTS": {
       "kind": "short_video",
-      "status": "planned",
+      "status": "active",
       "requires_media_file": true,
       "required_secrets": [
         "YOUTUBE_OAUTH_CLIENT_JSON",
@@ -46,6 +46,28 @@
         "TIKTOK_REFRESH_TOKEN"
       ],
       "allowed_asset_types": ["Shorts", "TikTok"]
+    },
+    "THREADS": {
+      "kind": "social_text_video",
+      "status": "planned",
+      "requires_media_file": false,
+      "required_secrets": [
+        "META_ACCESS_TOKEN",
+        "THREADS_USER_ID"
+      ],
+      "allowed_asset_types": ["Social", "Thread"]
+    },
+    "X": {
+      "kind": "social_text",
+      "status": "planned",
+      "requires_media_file": false,
+      "required_secrets": [
+        "X_API_KEY",
+        "X_API_SECRET",
+        "X_ACCESS_TOKEN",
+        "X_ACCESS_TOKEN_SECRET"
+      ],
+      "allowed_asset_types": ["Social", "Post"]
     }
   },
   "legacy_channel_map": {
@@ -57,6 +79,9 @@
     "YouTube Shorts": "YOUTUBE_SHORTS",
     "Instagram": "INSTAGRAM_REELS",
     "Instagram Reels": "INSTAGRAM_REELS",
-    "TikTok": "TIKTOK"
+    "TikTok": "TIKTOK",
+    "Threads": "THREADS",
+    "Thread": "THREADS",
+    "Twitter": "X"
   }
 }
