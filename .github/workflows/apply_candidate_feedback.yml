@@ -1,0 +1,29 @@
+name: Apply candidate feedback
+
+on:
+  workflow_dispatch:
+  schedule:
+    - cron: "25 2 * * *"
+
+jobs:
+  apply-candidate-feedback:
+    runs-on: ubuntu-latest
+    env:
+      GOOGLE_SERVICE_ACCOUNT_JSON: ${{ secrets.GOOGLE_SERVICE_ACCOUNT_JSON }}
+      SPREADSHEET_ID: ${{ secrets.SPREADSHEET_ID }}
+      SHEET_NAME: ${{ vars.SHEET_NAME || 'sheet1' }}
+      STRATEGY_FEEDBACK_SHEET_NAME: ${{ vars.STRATEGY_FEEDBACK_SHEET_NAME || 'strategy_feedback' }}
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Install dependencies
+        run: pip install -r requirements.txt
+
+      - name: Apply candidate feedback
+        run: python scripts/apply_feedback_to_candidate_queue.py
