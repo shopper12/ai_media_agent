@@ -26,4 +26,4 @@ jobs:
         run: pip install -r requirements.txt
 
       - name: Generate candidates
-        run: python scripts/generate_content_candidates.py
+        run: python scripts/generate_revenue_viral_candidates.py
