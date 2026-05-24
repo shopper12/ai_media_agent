@@ -1,47 +1,209 @@
 {
-  "project_goal": "Generate monetizable content candidates that the owner can approve, hold, or reject.",
-  "target_horizon_years": 5,
+  "project_goal": "Generate Korean-market content candidates that maximize both revenue and viewership, then route each item to the channel where it has the highest expected return.",
   "content_language": "Korean",
-  "primary_monetization": [
-    "affiliate comparison",
-    "lead magnet",
-    "paid template",
-    "tool review",
-    "newsletter funnel",
-    "future digital product"
-  ],
-  "audience_categories": [
+  "decision_queue": {
+    "max_candidates_per_week": 7,
+    "owner_decision_initial_value": "",
+    "approval_status_initial_value": "READY_FOR_OWNER_APPROVAL",
+    "reject_requeue_policy": "Do not requeue rejected topics unless a materially different angle exists."
+  },
+  "scoring": {
+    "expected_profit_score": {
+      "min_queue_score": 0.55,
+      "weights": {
+        "affiliate_or_ad_unit_value": 0.30,
+        "search_trend_momentum": 0.20,
+        "competitor_content_performance": 0.20,
+        "conversion_intent_score": 0.15,
+        "repeatability": 0.10,
+        "automation_ease": 0.05
+      }
+    },
+    "viral_potential_score": {
+      "video_min_score": 0.60,
+      "weights": {
+        "hook_shock_value": 0.35,
+        "relatability_score": 0.25,
+        "share_motivation": 0.20,
+        "trend_timing": 0.20
+      }
+    }
+  },
+  "format_rules": [
     {
-      "category": "AI Tools",
-      "spending_motives": ["save time", "reduce repetitive work", "increase side income", "office productivity"],
-      "formats": ["Shorts", "Blog", "Comparison Sheet"]
+      "condition": "EPS >= 0.55 and VPS >= 0.80",
+      "recommended_format": "Both",
+      "publish_channel": "NAVER_BLOG, YOUTUBE_SHORTS, TIKTOK",
+      "reason": "High revenue potential and high viral reach."
     },
     {
-      "category": "Personal Finance",
-      "spending_motives": ["avoid loss", "increase income", "automate tracking", "compare financial products"],
-      "formats": ["Blog", "Checklist", "Shorts"]
+      "condition": "EPS >= 0.55 and VPS >= 0.65 and VPS < 0.80",
+      "recommended_format": "Both",
+      "publish_channel": "NAVER_BLOG, YOUTUBE_SHORTS",
+      "reason": "Revenue plus video growth, but not enough for full short-form blast."
     },
     {
-      "category": "Health Routine",
-      "spending_motives": ["reduce pain", "improve posture", "sleep recovery", "low-effort routines"],
-      "formats": ["Shorts", "Checklist", "Routine Card"]
+      "condition": "EPS >= 0.55 and VPS >= 0.60 and VPS < 0.65",
+      "recommended_format": "Both",
+      "publish_channel": "NAVER_BLOG, INSTAGRAM_REELS",
+      "reason": "Visual comparison works, but YouTube-first push is weaker."
     },
     {
-      "category": "Work Automation",
-      "spending_motives": ["reduce admin work", "automate reports", "connect apps", "avoid mistakes"],
-      "formats": ["Blog", "Template", "Workflow Guide"]
+      "condition": "EPS >= 0.55 and VPS < 0.60",
+      "recommended_format": "Blog",
+      "publish_channel": "NAVER_BLOG",
+      "reason": "Do not spend video resources on low viral score."
     },
     {
-      "category": "Digital Productivity",
-      "spending_motives": ["organize knowledge", "study faster", "write faster", "manage tasks"],
-      "formats": ["Shorts", "Blog", "Template"]
+      "condition": "EPS < 0.55 and VPS >= 0.60",
+      "recommended_format": "Shorts",
+      "publish_channel": "YOUTUBE_SHORTS",
+      "reason": "Audience growth play, not affiliate-first."
     }
   ],
-  "candidate_rules": {
-    "max_new_candidates_per_run": 5,
-    "min_expected_profit_score": 75,
-    "avoid_promises": ["guaranteed income", "guaranteed cure", "risk-free investment"],
-    "owner_decision_initial_value": "",
-    "approval_status_initial_value": "READY_FOR_OWNER_APPROVAL"
+  "topic_tiers": [
+    {
+      "tier": 1,
+      "category": "AI Tools",
+      "title_patterns": [
+        "AI 툴 쓰는데 이거 모르면 손해: 직장인용 무료·유료 도구 5개 비교",
+        "한국 직장인이 아직 모르는 무료 AI 툴 5개",
+        "ChatGPT만 쓰면 손해인 이유: 업무별 AI 툴 조합표"
+      ],
+      "affiliate_program": "AI tool affiliate / template lead magnet",
+      "estimated_unit_value": "MEDIUM",
+      "base_metrics": {
+        "affiliate_or_ad_unit_value": 0.72,
+        "search_trend_momentum": 0.76,
+        "competitor_content_performance": 0.78,
+        "conversion_intent_score": 0.70,
+        "repeatability": 0.88,
+        "automation_ease": 0.92,
+        "hook_shock_value": 0.78,
+        "relatability_score": 0.82,
+        "share_motivation": 0.72,
+        "trend_timing": 0.78
+      },
+      "risk_level": "MEDIUM"
+    },
+    {
+      "tier": 1,
+      "category": "Personal Finance",
+      "title_patterns": [
+        "카드·통신비 이렇게 바꿨더니 한 달 고정비가 얼마나 줄었나",
+        "직장인 세금 환급 체크리스트: 놓치기 쉬운 항목 7개",
+        "보험료 줄이기 전에 반드시 봐야 하는 비교 기준"
+      ],
+      "affiliate_program": "finance lead / comparison content",
+      "estimated_unit_value": "HIGH",
+      "base_metrics": {
+        "affiliate_or_ad_unit_value": 0.88,
+        "search_trend_momentum": 0.66,
+        "competitor_content_performance": 0.72,
+        "conversion_intent_score": 0.86,
+        "repeatability": 0.76,
+        "automation_ease": 0.62,
+        "hook_shock_value": 0.72,
+        "relatability_score": 0.86,
+        "share_motivation": 0.78,
+        "trend_timing": 0.66
+      },
+      "risk_level": "HIGH"
+    },
+    {
+      "tier": 2,
+      "category": "Side Hustle Automation",
+      "title_patterns": [
+        "N잡러가 자동화 툴 고를 때 돈 낭비하는 지점 5개",
+        "부업 자동화 툴 비교: 처음부터 유료 결제하면 손해인 이유",
+        "콘텐츠 자동화로 돈 벌려면 먼저 세팅해야 하는 3가지"
+      ],
+      "affiliate_program": "SaaS affiliate / paid template",
+      "estimated_unit_value": "MEDIUM_HIGH",
+      "base_metrics": {
+        "affiliate_or_ad_unit_value": 0.82,
+        "search_trend_momentum": 0.64,
+        "competitor_content_performance": 0.68,
+        "conversion_intent_score": 0.74,
+        "repeatability": 0.86,
+        "automation_ease": 0.84,
+        "hook_shock_value": 0.66,
+        "relatability_score": 0.72,
+        "share_motivation": 0.62,
+        "trend_timing": 0.64
+      },
+      "risk_level": "MEDIUM"
+    },
+    {
+      "tier": 2,
+      "category": "Health Supplement Comparison",
+      "title_patterns": [
+        "건강기능식품 성분표에서 사람들이 제일 많이 놓치는 것",
+        "비슷해 보이는 영양제 가격 차이, 성분 기준으로 보면 다르다",
+        "쿠팡에서 영양제 고르기 전 확인할 성분 체크리스트"
+      ],
+      "affiliate_program": "Coupang Partners / product comparison",
+      "estimated_unit_value": "MEDIUM",
+      "base_metrics": {
+        "affiliate_or_ad_unit_value": 0.74,
+        "search_trend_momentum": 0.58,
+        "competitor_content_performance": 0.70,
+        "conversion_intent_score": 0.72,
+        "repeatability": 0.78,
+        "automation_ease": 0.70,
+        "hook_shock_value": 0.58,
+        "relatability_score": 0.74,
+        "share_motivation": 0.56,
+        "trend_timing": 0.58
+      },
+      "risk_level": "HIGH"
+    },
+    {
+      "tier": 3,
+      "category": "Work Automation",
+      "title_patterns": [
+        "직장인이 매일 30분 버리는 일을 AI로 줄이는 방법",
+        "보고서 쓰기 전에 이 자동화 루틴부터 만들면 시간이 줄어든다",
+        "엑셀·메일·회의록 반복 업무를 한 번에 줄이는 세팅"
+      ],
+      "affiliate_program": "template / newsletter funnel",
+      "estimated_unit_value": "LOW_MEDIUM",
+      "base_metrics": {
+        "affiliate_or_ad_unit_value": 0.54,
+        "search_trend_momentum": 0.70,
+        "competitor_content_performance": 0.72,
+        "conversion_intent_score": 0.58,
+        "repeatability": 0.90,
+        "automation_ease": 0.92,
+        "hook_shock_value": 0.74,
+        "relatability_score": 0.88,
+        "share_motivation": 0.76,
+        "trend_timing": 0.72
+      },
+      "risk_level": "LOW"
+    }
+  ],
+  "experiment_formats": [
+    "첫 2초 숫자 충격형: '이걸 몰라서 매달 X만원 버립니다'",
+    "정보격차형: '한국인만 아직 잘 모르는 무료 AI 툴'",
+    "실패회피형: '처음부터 유료 결제하면 손해인 이유'",
+    "저장유도형: '나중에 보려고 저장해야 하는 체크리스트'"
+  ],
+  "next_trend_seed_topics": [
+    "연말정산·환급 시즌",
+    "신학기·입사 시즌 생산성 도구",
+    "AI 신기능 출시 직후 비교",
+    "고정비 절감 시즌성 검색어"
+  ],
+  "risk_rules": {
+    "avoid_promises": [
+      "guaranteed income",
+      "guaranteed cure",
+      "risk-free investment",
+      "무조건 돈 번다",
+      "확실히 치료된다"
+    ],
+    "finance_health_requires_disclaimer": true,
+    "affiliate_disclosure_required": true
   }
 }
