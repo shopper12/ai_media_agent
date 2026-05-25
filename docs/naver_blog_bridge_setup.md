@@ -28,7 +28,31 @@ http://127.0.0.1:8787/webhook/naver-blog-publish
 
 Use a tunnel such as ngrok or Cloudflare Tunnel.
 
-Example with ngrok:
+### 3-1. Install ngrok on Windows
+
+If `ngrok` is not recognized in PowerShell, install it first.
+
+Option A: winget
+
+```powershell
+winget install ngrok.ngrok
+```
+
+Close PowerShell, open a new PowerShell window, then verify:
+
+```powershell
+ngrok version
+```
+
+Option B: Chocolatey
+
+```powershell
+choco install ngrok
+```
+
+If neither `winget` nor `choco` is available, download ngrok for Windows from the official ngrok dashboard, unzip it, and run `ngrok.exe` from that folder.
+
+### 3-2. Run ngrok
 
 ```powershell
 ngrok http 8787
@@ -82,6 +106,13 @@ FAILED
 NEED_CREDENTIAL
 ```
 
-## 7. Next implementation
+## 7. Local browser publish
 
-The next file to add is a local browser publisher that reads `bridge_inbox/naver_blog/*.json`, opens the Naver Blog editor with an existing browser session, fills title/body/tags, and returns the final URL.
+After the bridge receives JSON files, run:
+
+```powershell
+cd C:\codetest\ai_media_agent
+python scripts\local_naver_blog_publisher.py --blog-id your-naver-blog-id
+```
+
+The publisher reads `bridge_inbox/naver_blog/*.json`, opens the Naver Blog editor with an existing browser session, fills title/body/tags, and records the final URL back to the sheet after you paste the published URL.
