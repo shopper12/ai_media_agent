@@ -1,0 +1,11 @@
+[
+  {
+    "asset_id": "ASSET-CONTENT-001-Blog",
+    "content_id": "CONTENT-001",
+    "title": "내 업무 스타일에 딱! 사무실 AI 도구 5가지, 현명한 선택 가이드",
+    "json": "outbox/naver_blog/asset-content-001-blog.json",
+    "markdown": "outbox/naver_blog/asset-content-001-blog.md",
+    "html": "outbox/naver_blog/asset-content-001-blog.html",
+    "prepared_at": "2026-05-25 14:49:58 KST"
+  }
+]
