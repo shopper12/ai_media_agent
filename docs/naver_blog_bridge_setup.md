@@ -24,15 +24,39 @@ Default local endpoint:
 http://127.0.0.1:8787/webhook/naver-blog-publish
 ```
 
+Health check:
+
+```powershell
+curl http://127.0.0.1:8787/health
+```
+
 ## 3. Expose local endpoint temporarily
 
-Use a tunnel such as ngrok or Cloudflare Tunnel.
+Use a tunnel such as Cloudflare Tunnel or ngrok.
 
-### 3-1. Install ngrok on Windows
+## 3-A. Recommended: Cloudflare Tunnel
+
+Install:
+
+```powershell
+winget install --id Cloudflare.cloudflared
+```
+
+Close PowerShell, open a new PowerShell window, then run:
+
+```powershell
+cloudflared tunnel --url http://localhost:8787
+```
+
+Copy the HTTPS URL and append the webhook path:
+
+```text
+https://xxxx.trycloudflare.com/webhook/naver-blog-publish
+```
+
+## 3-B. Alternative: ngrok
 
 If `ngrok` is not recognized in PowerShell, install it first.
-
-Option A: winget
 
 ```powershell
 winget install ngrok.ngrok
@@ -44,15 +68,27 @@ Close PowerShell, open a new PowerShell window, then verify:
 ngrok version
 ```
 
-Option B: Chocolatey
+If ngrok says the agent version is too old, update it:
 
 ```powershell
-choco install ngrok
+ngrok update
 ```
 
-If neither `winget` nor `choco` is available, download ngrok for Windows from the official ngrok dashboard, unzip it, and run `ngrok.exe` from that folder.
+If `ngrok update` does not update to the required version, uninstall and reinstall:
 
-### 3-2. Run ngrok
+```powershell
+winget uninstall ngrok.ngrok
+winget install ngrok.ngrok
+ngrok version
+```
+
+ngrok requires an account authtoken:
+
+```powershell
+ngrok config add-authtoken YOUR_NGROK_AUTHTOKEN
+```
+
+Then run:
 
 ```powershell
 ngrok http 8787
@@ -69,8 +105,14 @@ https://xxxx.ngrok-free.app/webhook/naver-blog-publish
 Repository → Settings → Secrets and variables → Actions → New repository secret
 
 ```text
-NAVER_BLOG_WEBHOOK_URL=https://xxxx.ngrok-free.app/webhook/naver-blog-publish
+NAVER_BLOG_WEBHOOK_URL=https://xxxx.trycloudflare.com/webhook/naver-blog-publish
 NAVER_BLOG_ID=your-naver-blog-id
+```
+
+If using ngrok, use the ngrok URL instead:
+
+```text
+NAVER_BLOG_WEBHOOK_URL=https://xxxx.ngrok-free.app/webhook/naver-blog-publish
 ```
 
 ## 5. Approve Sheet row
