@@ -4,3 +4,11 @@ node_modules/
 *.log
 .DS_Store
 __pycache__/
+
+# Local credentials / browser sessions
+browser_session_state.json
+youtube_oauth_client.json
+get_youtube_metrics_token.py
+_local_backup/
+.local/
+bridge_inbox/
