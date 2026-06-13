@@ -1,207 +1,308 @@
 {
-  "project_goal": "Generate Korean-market content candidates that maximize both revenue and viewership, then route each item to the channel where it has the highest expected return.",
+  "project_goal": "2026년 한국 YouTube Shorts + 네이버 블로그 수익 극대화. 조회수·저장율·제휴 전환율이 동시에 높은 카테고리에만 집중한다.",
   "content_language": "Korean",
+  "target_platform_priority": ["YOUTUBE_SHORTS", "NAVER_BLOG"],
   "decision_queue": {
-    "max_candidates_per_week": 7,
+    "max_candidates_per_week": 10,
     "owner_decision_initial_value": "",
     "approval_status_initial_value": "READY_FOR_OWNER_APPROVAL",
-    "reject_requeue_policy": "Do not requeue rejected topics unless a materially different angle exists."
+    "reject_requeue_policy": "실질적으로 다른 각도(다른 후크 유형 + 다른 감정 트리거)가 있을 때만 재큐잉."
   },
   "scoring": {
     "expected_profit_score": {
-      "min_queue_score": 0.55,
+      "min_queue_score": 0.60,
       "weights": {
         "affiliate_or_ad_unit_value": 0.30,
         "search_trend_momentum": 0.20,
-        "competitor_content_performance": 0.20,
-        "conversion_intent_score": 0.15,
+        "competitor_content_performance": 0.15,
+        "conversion_intent_score": 0.20,
         "repeatability": 0.10,
         "automation_ease": 0.05
       }
     },
     "viral_potential_score": {
-      "video_min_score": 0.60,
+      "video_min_score": 0.65,
       "weights": {
         "hook_shock_value": 0.35,
         "relatability_score": 0.25,
-        "share_motivation": 0.20,
-        "trend_timing": 0.20
+        "share_motivation": 0.25,
+        "trend_timing": 0.15
       }
     }
   },
   "format_rules": [
     {
-      "condition": "EPS >= 0.55 and VPS >= 0.80",
+      "condition": "EPS >= 0.65 and VPS >= 0.80",
       "recommended_format": "Both",
-      "publish_channel": "NAVER_BLOG, YOUTUBE_SHORTS, TIKTOK",
-      "reason": "High revenue potential and high viral reach."
+      "publish_channel": "YOUTUBE_SHORTS, NAVER_BLOG",
+      "reason": "수익+바이럴 최고 조합. 양쪽 동시 발행."
     },
     {
-      "condition": "EPS >= 0.55 and VPS >= 0.65 and VPS < 0.80",
+      "condition": "EPS >= 0.65 and VPS >= 0.65 and VPS < 0.80",
       "recommended_format": "Both",
-      "publish_channel": "NAVER_BLOG, YOUTUBE_SHORTS",
-      "reason": "Revenue plus video growth, but not enough for full short-form blast."
+      "publish_channel": "YOUTUBE_SHORTS, NAVER_BLOG",
+      "reason": "수익 우선, 영상도 가능."
     },
     {
-      "condition": "EPS >= 0.55 and VPS >= 0.60 and VPS < 0.65",
-      "recommended_format": "Both",
-      "publish_channel": "NAVER_BLOG, INSTAGRAM_REELS",
-      "reason": "Visual comparison works, but YouTube-first push is weaker."
-    },
-    {
-      "condition": "EPS >= 0.55 and VPS < 0.60",
-      "recommended_format": "Blog",
-      "publish_channel": "NAVER_BLOG",
-      "reason": "Do not spend video resources on low viral score."
-    },
-    {
-      "condition": "EPS < 0.55 and VPS >= 0.60",
+      "condition": "EPS < 0.65 and VPS >= 0.75",
       "recommended_format": "Shorts",
       "publish_channel": "YOUTUBE_SHORTS",
-      "reason": "Audience growth play, not affiliate-first."
+      "reason": "구독자 확보용 바이럴 콘텐츠."
+    },
+    {
+      "condition": "EPS >= 0.65 and VPS < 0.65",
+      "recommended_format": "Blog",
+      "publish_channel": "NAVER_BLOG",
+      "reason": "검색 SEO 수익. 영상 리소스 낭비 금지."
     }
   ],
   "topic_tiers": [
     {
       "tier": 1,
-      "category": "AI Tools",
+      "category": "재테크·절약 실화",
+      "why_high": "검색량 최고, 제휴 단가 최고(금융상품), 저장율 1위 카테고리",
+      "target_emotion": "현실 공감 + 손해 회피 공포",
       "title_patterns": [
-        "AI 툴 쓰는데 이거 모르면 손해: 직장인용 무료·유료 도구 5개 비교",
-        "한국 직장인이 아직 모르는 무료 AI 툴 5개",
-        "ChatGPT만 쓰면 손해인 이유: 업무별 AI 툴 조합표"
+        "월급 300 직장인이 실제로 연 500 모은 방법",
+        "고정비 줄이기 전에 이것부터: 아무도 안 알려주는 순서",
+        "카드 포인트로 1년에 XX만원 챙기는 사람들의 공통점",
+        "가계부 3년 쓴 결과: 돈이 새는 진짜 구멍 1위",
+        "월 50만원 자동 저축하는 통장 쪼개기 세팅법"
       ],
-      "affiliate_program": "AI tool affiliate / template lead magnet",
-      "estimated_unit_value": "MEDIUM",
+      "hook_patterns": [
+        "숫자 충격형: '이걸 몰라서 작년에 XX만원 버렸습니다'",
+        "고백형: '솔직히 말하면 저도 이걸로 바꿨어요'",
+        "반전형: '재테크 고수들이 절대 먼저 안 알려주는 것'"
+      ],
+      "affiliate_program": "토스증권·카카오뱅크·신한은행 제휴, 쿠팡파트너스 가계부앱",
+      "estimated_unit_value": "VERY_HIGH",
       "base_metrics": {
-        "affiliate_or_ad_unit_value": 0.72,
-        "search_trend_momentum": 0.76,
-        "competitor_content_performance": 0.78,
-        "conversion_intent_score": 0.70,
-        "repeatability": 0.88,
-        "automation_ease": 0.92,
-        "hook_shock_value": 0.78,
-        "relatability_score": 0.82,
-        "share_motivation": 0.72,
-        "trend_timing": 0.78
+        "affiliate_or_ad_unit_value": 0.92,
+        "search_trend_momentum": 0.85,
+        "competitor_content_performance": 0.88,
+        "conversion_intent_score": 0.90,
+        "repeatability": 0.90,
+        "automation_ease": 0.70,
+        "hook_shock_value": 0.88,
+        "relatability_score": 0.92,
+        "share_motivation": 0.88,
+        "trend_timing": 0.85
       },
-      "risk_level": "MEDIUM"
+      "risk_level": "MEDIUM",
+      "disclaimer_required": true
     },
     {
       "tier": 1,
-      "category": "Personal Finance",
+      "category": "직장인 이직·연봉협상",
+      "why_high": "감정 자극 최강(분노+희망), 공유율 최고, 저장 폭발 카테고리",
+      "target_emotion": "현실 불만 + 탈출 욕구 + 나만 손해보는 것 같은 공포",
       "title_patterns": [
-        "카드·통신비 이렇게 바꿨더니 한 달 고정비가 얼마나 줄었나",
-        "직장인 세금 환급 체크리스트: 놓치기 쉬운 항목 7개",
-        "보험료 줄이기 전에 반드시 봐야 하는 비교 기준"
+        "연봉 협상 실패하는 사람들의 공통 실수 1가지",
+        "이직 준비하는데 아무것도 모르는 직장인을 위한 체크리스트",
+        "퇴사 전에 반드시 챙겨야 하는 것들 (몰랐다가 손해본 것들)",
+        "면접에서 연봉 얼마 원하세요? 이렇게 답했더니 달랐다",
+        "같은 스펙인데 연봉 차이 나는 이유: 현직 HR이 알려준 것"
       ],
-      "affiliate_program": "finance lead / comparison content",
+      "hook_patterns": [
+        "폭로형: '회사가 절대 먼저 말 안 해주는 것'",
+        "공감형: '저도 3년 동안 손해봤는데 이게 이유였어요'",
+        "실수 경고형: '연봉 협상 전날 이것 안 하면 무조건 손해'"
+      ],
+      "affiliate_program": "원티드·사람인·잡코리아 리크루팅 제휴, 자기소개서 클래스",
+      "estimated_unit_value": "HIGH",
+      "base_metrics": {
+        "affiliate_or_ad_unit_value": 0.82,
+        "search_trend_momentum": 0.90,
+        "competitor_content_performance": 0.85,
+        "conversion_intent_score": 0.80,
+        "repeatability": 0.88,
+        "automation_ease": 0.75,
+        "hook_shock_value": 0.92,
+        "relatability_score": 0.95,
+        "share_motivation": 0.92,
+        "trend_timing": 0.88
+      },
+      "risk_level": "LOW",
+      "disclaimer_required": false
+    },
+    {
+      "tier": 1,
+      "category": "부업·N잡 실전",
+      "why_high": "구매 의도 매우 높음, SaaS 제휴 고단가, 20-30대 핵심 관심사",
+      "target_emotion": "현재 수입 불안 + 자유 욕구",
+      "title_patterns": [
+        "퇴근 후 2시간으로 월 XX만원 버는 현실적인 방법",
+        "부업 처음 시작할 때 이거부터 하면 안 됩니다 (가장 흔한 실수)",
+        "직장 다니면서 조용히 부업하는 사람들이 선택한 것 TOP 3",
+        "스마트스토어 vs 크몽 vs 클래스101: 초보에게 맞는 것은?",
+        "부업으로 월 100 버는 데 걸린 시간과 실제 과정"
+      ],
+      "hook_patterns": [
+        "실화형: '제가 직접 해봤습니다'",
+        "비교형: '이것 vs 저것, 초보에게 맞는 건 이겁니다'",
+        "실수 경고형: '이것부터 시작하면 99% 실패합니다'"
+      ],
+      "affiliate_program": "클래스101·크몽·스마트스토어 제휴, 자동화 SaaS 툴",
       "estimated_unit_value": "HIGH",
       "base_metrics": {
         "affiliate_or_ad_unit_value": 0.88,
-        "search_trend_momentum": 0.66,
-        "competitor_content_performance": 0.72,
+        "search_trend_momentum": 0.88,
+        "competitor_content_performance": 0.84,
         "conversion_intent_score": 0.86,
-        "repeatability": 0.76,
-        "automation_ease": 0.62,
-        "hook_shock_value": 0.72,
-        "relatability_score": 0.86,
-        "share_motivation": 0.78,
-        "trend_timing": 0.66
+        "repeatability": 0.92,
+        "automation_ease": 0.80,
+        "hook_shock_value": 0.85,
+        "relatability_score": 0.88,
+        "share_motivation": 0.84,
+        "trend_timing": 0.88
       },
-      "risk_level": "HIGH"
+      "risk_level": "LOW",
+      "disclaimer_required": false
     },
     {
       "tier": 2,
-      "category": "Side Hustle Automation",
+      "category": "청약·전세·부동산 입문",
+      "why_high": "20-30대 불안감 극강, 검색량 꾸준히 높음, 실질적 정보 부족 틈새",
+      "target_emotion": "주거 불안 + 나만 뒤처지는 공포",
       "title_patterns": [
-        "N잡러가 자동화 툴 고를 때 돈 낭비하는 지점 5개",
-        "부업 자동화 툴 비교: 처음부터 유료 결제하면 손해인 이유",
-        "콘텐츠 자동화로 돈 벌려면 먼저 세팅해야 하는 3가지"
+        "청약 가점 계산 실수로 날린 것들: 이것만 확인하세요",
+        "전세 계약 전 반드시 확인해야 하는 것 (경험자가 알려주는 것)",
+        "2026년 청약 노리는 직장인을 위한 입문 가이드",
+        "월세 vs 전세 vs 청약: 지금 내 상황엔 뭐가 맞나",
+        "처음 집 보러 갈 때 부동산에서 절대 먼저 말하면 안 되는 것"
       ],
-      "affiliate_program": "SaaS affiliate / paid template",
+      "hook_patterns": [
+        "경고형: '이거 모르고 계약하면 보증금 날립니다'",
+        "현실체크형: '청약 넣기 전에 이것 계산 안 하면 시간 낭비'",
+        "공감형: '나만 이런 거 모르나 싶었는데 다들 몰랐더라고요'"
+      ],
+      "affiliate_program": "부동산 플랫폼 제휴(직방·호갱노노), 청약 관련 강의",
+      "estimated_unit_value": "HIGH",
+      "base_metrics": {
+        "affiliate_or_ad_unit_value": 0.84,
+        "search_trend_momentum": 0.82,
+        "competitor_content_performance": 0.78,
+        "conversion_intent_score": 0.84,
+        "repeatability": 0.80,
+        "automation_ease": 0.65,
+        "hook_shock_value": 0.82,
+        "relatability_score": 0.90,
+        "share_motivation": 0.86,
+        "trend_timing": 0.80
+      },
+      "risk_level": "MEDIUM",
+      "disclaimer_required": true
+    },
+    {
+      "tier": 2,
+      "category": "건강·다이어트 실화",
+      "why_high": "쿠팡파트너스 고단가, 감정 이입 쉬움, 사계절 수요",
+      "target_emotion": "몸에 대한 불안·자기혐오·변화 욕구",
+      "title_patterns": [
+        "3개월 -10kg 실제 식단: 유지한 것과 버린 것",
+        "운동 1년 했는데 살 안 빠진 이유: 이걸 몰랐습니다",
+        "헬스장 안 다니고 집에서 실제로 된 루틴 (직장인 기준)",
+        "영양제 진짜 필요한 것 vs 돈 낭비인 것: 성분 기준으로 구분",
+        "야식 끊는 데 성공한 방법: 의지력 말고 이 세팅을 바꿨어요"
+      ],
+      "hook_patterns": [
+        "고백형: '저도 1년 동안 실패했는데 이게 달랐어요'",
+        "반전형: '열심히 해서 안 빠지는 게 맞습니다, 이유가 있어요'",
+        "저장유도형: '이 체크리스트 저장해두고 식단 전에 보세요'"
+      ],
+      "affiliate_program": "쿠팡파트너스 (영양제·운동용품), 다이어트 앱 제휴",
       "estimated_unit_value": "MEDIUM_HIGH",
       "base_metrics": {
-        "affiliate_or_ad_unit_value": 0.82,
-        "search_trend_momentum": 0.64,
-        "competitor_content_performance": 0.68,
-        "conversion_intent_score": 0.74,
-        "repeatability": 0.86,
-        "automation_ease": 0.84,
-        "hook_shock_value": 0.66,
-        "relatability_score": 0.72,
-        "share_motivation": 0.62,
-        "trend_timing": 0.64
+        "affiliate_or_ad_unit_value": 0.80,
+        "search_trend_momentum": 0.84,
+        "competitor_content_performance": 0.80,
+        "conversion_intent_score": 0.78,
+        "repeatability": 0.88,
+        "automation_ease": 0.72,
+        "hook_shock_value": 0.82,
+        "relatability_score": 0.92,
+        "share_motivation": 0.84,
+        "trend_timing": 0.82
       },
-      "risk_level": "MEDIUM"
+      "risk_level": "HIGH",
+      "disclaimer_required": true
     },
     {
       "tier": 2,
-      "category": "Health Supplement Comparison",
+      "category": "AI 실사용 꿀팁",
+      "why_high": "검색 트렌드 급상승, AI 툴 제휴 고단가, 직장인 구매 의도 높음",
+      "target_emotion": "뒤처지는 것에 대한 불안 + 업무 효율 욕구",
       "title_patterns": [
-        "건강기능식품 성분표에서 사람들이 제일 많이 놓치는 것",
-        "비슷해 보이는 영양제 가격 차이, 성분 기준으로 보면 다르다",
-        "쿠팡에서 영양제 고르기 전 확인할 성분 체크리스트"
+        "ChatGPT로 보고서 초안 10분 만에 끝내는 실제 프롬프트",
+        "회사에서 AI 쓰는 척하면서 실제로 쓰는 사람들의 방법",
+        "AI 유료 결제 전에 알았으면 좋았을 것들",
+        "Gemini vs ChatGPT: 업무별로 진짜 다릅니다",
+        "직장인이 매일 쓰는 AI 루틴 5가지 (복붙해서 쓰세요)"
       ],
-      "affiliate_program": "Coupang Partners / product comparison",
-      "estimated_unit_value": "MEDIUM",
-      "base_metrics": {
-        "affiliate_or_ad_unit_value": 0.74,
-        "search_trend_momentum": 0.58,
-        "competitor_content_performance": 0.70,
-        "conversion_intent_score": 0.72,
-        "repeatability": 0.78,
-        "automation_ease": 0.70,
-        "hook_shock_value": 0.58,
-        "relatability_score": 0.74,
-        "share_motivation": 0.56,
-        "trend_timing": 0.58
-      },
-      "risk_level": "HIGH"
-    },
-    {
-      "tier": 3,
-      "category": "Work Automation",
-      "title_patterns": [
-        "직장인이 매일 30분 버리는 일을 AI로 줄이는 방법",
-        "보고서 쓰기 전에 이 자동화 루틴부터 만들면 시간이 줄어든다",
-        "엑셀·메일·회의록 반복 업무를 한 번에 줄이는 세팅"
+      "hook_patterns": [
+        "실용형: '이 프롬프트 복붙하면 지금 당장 됩니다'",
+        "비교형: 'A vs B, 이걸로 골라야 하는 기준 알려드림'",
+        "손해경고형: '이거 모르고 유료 결제하면 돈 버립니다'"
       ],
-      "affiliate_program": "template / newsletter funnel",
-      "estimated_unit_value": "LOW_MEDIUM",
+      "affiliate_program": "AI SaaS 제휴 (Notion·Claude·Gamma), 템플릿 판매",
+      "estimated_unit_value": "MEDIUM_HIGH",
       "base_metrics": {
-        "affiliate_or_ad_unit_value": 0.54,
-        "search_trend_momentum": 0.70,
-        "competitor_content_performance": 0.72,
-        "conversion_intent_score": 0.58,
-        "repeatability": 0.90,
+        "affiliate_or_ad_unit_value": 0.80,
+        "search_trend_momentum": 0.92,
+        "competitor_content_performance": 0.82,
+        "conversion_intent_score": 0.78,
+        "repeatability": 0.92,
         "automation_ease": 0.92,
-        "hook_shock_value": 0.74,
-        "relatability_score": 0.88,
-        "share_motivation": 0.76,
-        "trend_timing": 0.72
+        "hook_shock_value": 0.80,
+        "relatability_score": 0.85,
+        "share_motivation": 0.78,
+        "trend_timing": 0.92
       },
-      "risk_level": "LOW"
+      "risk_level": "LOW",
+      "disclaimer_required": false
     }
   ],
-  "experiment_formats": [
-    "첫 2초 숫자 충격형: '이걸 몰라서 매달 X만원 버립니다'",
-    "정보격차형: '한국인만 아직 잘 모르는 무료 AI 툴'",
-    "실패회피형: '처음부터 유료 결제하면 손해인 이유'",
-    "저장유도형: '나중에 보려고 저장해야 하는 체크리스트'"
+  "hook_type_rotation": [
+    "숫자 충격형: 첫 2초에 구체적 금액/수치로 시작",
+    "고백·실화형: 화자가 직접 겪은 실패/성공 경험",
+    "손해 경고형: 모르면 손해본다는 공포 자극",
+    "반전형: 상식과 반대되는 사실로 시작",
+    "저장 유도형: 체크리스트·공식·템플릿 제공 약속",
+    "비교형: A vs B 명확한 기준 제시"
   ],
-  "next_trend_seed_topics": [
-    "연말정산·환급 시즌",
-    "신학기·입사 시즌 생산성 도구",
-    "AI 신기능 출시 직후 비교",
-    "고정비 절감 시즌성 검색어"
-  ],
+  "seasonal_triggers": {
+    "1월": ["연말정산 환급", "새해 목표 재테크", "다이어트 시작"],
+    "3월": ["신학기 생산성", "취업 시즌", "청약 가점 확인"],
+    "5월": ["종합소득세 신고", "여름 다이어트"],
+    "9월": ["이직 시즌", "연봉 협상 시즌 준비"],
+    "11월": ["연말정산 사전 준비", "보험료 점검"]
+  },
+  "content_quality_rules": {
+    "must_include": [
+      "구체적 숫자 또는 금액 (예: '월 50만원', '3개월', '7가지')",
+      "실제 경험 또는 데이터 기반 근거",
+      "즉시 행동 가능한 1가지 이상의 액션 아이템",
+      "첫 3초 안에 시청자가 계속 볼 이유 제시"
+    ],
+    "must_avoid": [
+      "'무조건', '확실히', '100%' 같은 보장 표현",
+      "구체성 없는 일반론 (예: 'AI 툴을 활용하면 좋습니다')",
+      "인사말로 시작 (예: '안녕하세요!')",
+      "경쟁 영상과 동일한 제목 패턴 반복"
+    ],
+    "shorts_script_rules": {
+      "total_duration_sec": 55,
+      "scene_count": 7,
+      "hook_duration_sec": 5,
+      "body_duration_sec": 40,
+      "cta_duration_sec": 10,
+      "tone": "친근하지만 정보가 밀도있게 전달되는 톤. 뉴스 앵커처럼 말하지 말고 친구가 귀띔해주는 방식."
+    }
+  },
   "risk_rules": {
     "avoid_promises": [
-      "guaranteed income",
-      "guaranteed cure",
-      "risk-free investment",
-      "무조건 돈 번다",
-      "확실히 치료된다"
+      "guaranteed income", "무조건 돈 번다", "확실히 치료된다",
+      "risk-free investment", "원금 보장"
     ],
     "finance_health_requires_disclaimer": true,
     "affiliate_disclosure_required": true
