@@ -29,7 +29,7 @@ EXTRA_COLUMNS = [
     "QualityChecklist",
 ]
 
-BANNED = ["안녕하세요", "오늘은", "알아볼게요", "도움이 되셨길"]
+BANNED = ["안녕하세요", "오늘은", "알아볼게요", "도움이 되셨길", "폭발", "200%", "완벽", "무조건"]
 
 
 def now_kst():
@@ -115,7 +115,7 @@ def parse_json(text):
 
 
 def build_prompt(row):
-    return f"""한국어 쇼츠 대본을 만든다. 목적은 끝까지 보기 쉬운 영상 대본이다.
+    return f"""한국어 쇼츠 대본을 만든다. 목적은 '끝까지 볼 이유가 있는 60초 영상'이다.
 
 입력:
 제목: {row.get('Title', '')}
@@ -124,13 +124,15 @@ def build_prompt(row):
 태그: {row.get('Tags', '')}
 주의문: {row.get('RiskNotice', '')}
 
-규칙:
-1. 첫 문장은 2초 안에 볼 이유가 보여야 한다.
-2. '안녕하세요', '오늘은 알아볼게요'로 시작하지 않는다.
-3. 리스트를 읽는 느낌보다 문제-반전-해결 흐름으로 쓴다.
-4. CTA는 구걸하지 말고 저장/다음 영상/링크의 실익을 말한다.
-5. 수익, 건강, 효과 보장 표현은 쓰지 않는다.
-6. 썸네일 메인 문구는 3~5단어로 쓴다.
+핵심 방향:
+1. 단순 목록 소개가 아니라 문제 → 반전 → 선택 기준 → 행동 순서로 쓴다.
+2. 첫 2초는 독자가 겪는 손실, 착각, 불편, 비교 기준 중 하나를 바로 말한다.
+3. '안녕하세요', '오늘은 알아볼게요', '추천드립니다'로 시작하지 않는다.
+4. 과장어, 보장 표현, 근거 없는 수치 표현을 쓰지 않는다.
+5. 자막은 한 화면에 10~16자 정도로 짧게 끊는다.
+6. CTA는 구걸형이 아니라 저장할 실익을 말한다.
+7. 금융, 건강, 부동산, 제도 주제는 개인차와 최신 확인 필요 문장을 넣는다.
+8. visual_note에는 흰 배경 텍스트가 아니라 화면 전환, 비교 카드, 체크리스트, 금액/시간 강조 같은 시각 연출을 쓴다.
 
 반드시 JSON만 반환한다.
 {{
@@ -139,17 +141,17 @@ def build_prompt(row):
     "thumbnail_text_pattern": "흔한 썸네일 문구 패턴",
     "weakness_to_improve": "우리 영상이 이겨야 할 약점"
   }},
-  "chosen_emotional_trigger": "모르면 손해|공감|반전|똑똑해 보임",
+  "chosen_emotional_trigger": "손실회피|공감|반전|저장가치|정보격차",
   "chosen_hook_pattern": "선택한 훅 패턴",
   "shorts_title": "40자 이내 제목",
   "thumbnail_main_text": "3~5단어",
   "thumbnail_sub_text": "보조 문구",
   "script": [
     {{"second":"0-2","line":"훅","visual_note":"화면"}},
-    {{"second":"2-8","line":"공감","visual_note":"화면"}},
-    {{"second":"8-30","line":"핵심1","visual_note":"화면"}},
-    {{"second":"30-50","line":"핵심2","visual_note":"화면"}},
-    {{"second":"50-60","line":"가치 제안 CTA","visual_note":"화면"}}
+    {{"second":"2-8","line":"공감 또는 문제 제기","visual_note":"화면"}},
+    {{"second":"8-25","line":"반전 또는 착각 교정","visual_note":"화면"}},
+    {{"second":"25-45","line":"선택 기준 2~3개","visual_note":"화면"}},
+    {{"second":"45-60","line":"저장할 이유와 CTA","visual_note":"화면"}}
   ],
   "on_screen_text_overlays": ["짧은 자막1", "짧은 자막2", "짧은 자막3"],
   "estimated_completion_rate": "HIGH|MEDIUM|LOW",
@@ -157,10 +159,12 @@ def build_prompt(row):
   "quality_checklist": {{
     "clear_first_2s": true,
     "relatable_pain": true,
+    "problem_twist_rule_cta_flow": true,
     "simple_words": true,
     "value_based_cta": true,
     "thumbnail_short": true,
-    "no_banned_opening": true
+    "no_banned_opening": true,
+    "no_hype_or_guarantee": true
   }}
 }}
 """
@@ -182,9 +186,12 @@ def call_gemini(prompt):
 def validate(asset):
     script = asset.get("script") or []
     first = script[0].get("line", "") if script else ""
+    full = " ".join(str(item.get("line", "")) for item in script if isinstance(item, dict))
     if len(script) < 5:
         return "REVISE_REQUIRED"
     if any(x in first for x in BANNED):
+        return "REVISE_REQUIRED"
+    if any(x in full for x in BANNED):
         return "REVISE_REQUIRED"
     checklist = asset.get("quality_checklist") or {}
     if isinstance(checklist, dict) and not all(bool(v) for v in checklist.values()):
