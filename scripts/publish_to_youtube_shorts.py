@@ -14,7 +14,7 @@ GOOGLE_SERVICE_ACCOUNT_JSON = os.environ["GOOGLE_SERVICE_ACCOUNT_JSON"]
 YOUTUBE_OAUTH_CLIENT_JSON = os.environ["YOUTUBE_OAUTH_CLIENT_JSON"]
 YOUTUBE_OAUTH_REFRESH_TOKEN = os.environ["YOUTUBE_OAUTH_REFRESH_TOKEN"]
 ASSETS_SHEET = os.environ.get("PUBLISH_ASSETS_SHEET_NAME", "publish_assets")
-PRIVACY_STATUS = os.environ.get("YOUTUBE_PRIVACY_STATUS", "private")
+PRIVACY_STATUS = os.environ.get("YOUTUBE_PRIVACY_STATUS", "public")
 CATEGORY_ID = os.environ.get("YOUTUBE_CATEGORY_ID", "28")
 SHEET_SCOPES = ["https://www.googleapis.com/auth/spreadsheets"]
 YOUTUBE_SCOPES = ["https://www.googleapis.com/auth/youtube.upload"]
@@ -30,6 +30,7 @@ COLUMNS = [
     "PlatformPostId",
     "PublishedAt",
     "UploadError",
+    "YouTubePrivacyStatus",
 ]
 
 
@@ -174,6 +175,7 @@ def main():
                 "TargetUrl": f"https://www.youtube.com/watch?v={video_id}",
                 "PlatformPostId": video_id,
                 "PublishedAt": now_kst(),
+                "YouTubePrivacyStatus": PRIVACY_STATUS,
                 "UploadError": "",
             })
             count += 1
