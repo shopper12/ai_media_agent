@@ -1,0 +1,93 @@
+name: YouTube Trend Short
+
+on:
+  workflow_dispatch:
+    inputs:
+      dry_run:
+        description: "Render with safe fixture behavior and skip YouTube upload"
+        required: true
+        type: boolean
+        default: true
+      confirm_public_upload:
+        description: "Type PUBLIC_UPLOAD to allow a public YouTube upload"
+        required: true
+        default: "DRY_RUN"
+      region:
+        description: "YouTube trend regionCode"
+        required: true
+        default: "US"
+      privacy_status:
+        description: "YouTube privacyStatus"
+        required: true
+        type: choice
+        default: "public"
+        options:
+          - public
+          - unlisted
+          - private
+
+jobs:
+  build-and-upload:
+    runs-on: ubuntu-latest
+    timeout-minutes: 35
+    permissions:
+      contents: read
+
+    env:
+      YOUTUBE_API_KEY: ${{ secrets.YOUTUBE_API_KEY }}
+      YOUTUBE_CLIENT_ID: ${{ secrets.YOUTUBE_CLIENT_ID }}
+      YOUTUBE_CLIENT_SECRET: ${{ secrets.YOUTUBE_CLIENT_SECRET }}
+      YOUTUBE_REFRESH_TOKEN: ${{ secrets.YOUTUBE_REFRESH_TOKEN }}
+      GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY }}
+      GEMINI_MODEL: ${{ vars.GEMINI_MODEL || 'gemini-1.5-flash' }}
+      TREND_VIDEO_CATEGORY_ID: "0"
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+
+      - name: Install system dependencies
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y ffmpeg fonts-noto-cjk
+
+      - name: Install Python dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install -r requirements.txt
+
+      - name: Validate Python files
+        run: |
+          python -m py_compile scripts/youtube_trend_short.py
+          pytest -q
+
+      - name: Build trend Short and optionally upload
+        env:
+          CONFIRM_PUBLIC_UPLOAD: ${{ inputs.confirm_public_upload }}
+        run: |
+          ARGS=(
+            --region "${{ inputs.region }}"
+            --video-category-id "$TREND_VIDEO_CATEGORY_ID"
+            --privacy-status "${{ inputs.privacy_status }}"
+            --confirm-public-upload "${{ inputs.confirm_public_upload }}"
+            --output-dir "out/youtube_trend_short"
+          )
+
+          if [ "${{ inputs.dry_run }}" = "true" ]; then
+            ARGS+=(--dry-run --skip-upload)
+          fi
+
+          python scripts/youtube_trend_short.py "${ARGS[@]}"
+
+      - name: Upload generated assets
+        uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: youtube-trend-short-assets
+          path: out/youtube_trend_short
+          if-no-files-found: warn

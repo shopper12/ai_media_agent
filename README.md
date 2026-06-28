@@ -1,14 +1,14 @@
 # AI Media Agent
 
-목표: 사용자는 매주 승인/보류/거절만 하고, AI agent가 고수익 콘텐츠 주제 선정·제작·검수·보고를 수행하는 자동화 골격.
+Goal: let the owner approve, hold, or reject content while the AI media agent handles topic selection, content drafting, review artifacts, and reporting.
 
-현재 버전은 **mock mode**다. OpenAI API 키, YouTube API 키, Google Sheets 연결 없이 n8n workflow 구조와 승인 큐를 먼저 확인한다.
+The base n8n flows still support **mock mode** so the workflow structure can be checked before connecting external APIs.
 
 ---
 
-## 0. 전제
+## 0. Prerequisite
 
-Docker `hello-world`가 성공한 상태여야 한다.
+Docker `hello-world` should run successfully.
 
 ```powershell
 docker run --rm hello-world
@@ -16,7 +16,7 @@ docker run --rm hello-world
 
 ---
 
-## 1. 로컬로 받기
+## 1. Clone
 
 ```powershell
 cd C:\codetest
@@ -24,7 +24,7 @@ git clone https://github.com/shopper12/ai_media_agent.git
 cd C:\codetest\ai_media_agent
 ```
 
-이미 폴더가 있으면:
+If the folder already exists:
 
 ```powershell
 cd C:\codetest\ai_media_agent
@@ -33,7 +33,7 @@ git pull
 
 ---
 
-## 2. n8n 실행
+## 2. Run n8n
 
 ```powershell
 cd C:\codetest\ai_media_agent
@@ -42,7 +42,7 @@ docker compose up -d
 docker ps
 ```
 
-정상 실행 후 브라우저에서:
+Open:
 
 ```text
 http://localhost:5678
@@ -50,15 +50,15 @@ http://localhost:5678
 
 ---
 
-## 3. n8n workflow import
+## 3. Import n8n workflows
 
-n8n 접속 후 아래 문서대로 workflow JSON을 import한다.
+Import the workflow JSON files from the n8n UI.
 
 ```text
 docs/n8n_import.md
 ```
 
-현재 업로드된 workflow:
+Current workflows:
 
 ```text
 n8n/workflows/01_mock_ai_tools_topic_scoring.json
@@ -68,15 +68,15 @@ n8n/workflows/03_mock_weekly_report.json
 
 ---
 
-## 4. 승인 큐
+## 4. Approval Queue
 
-기본 승인 큐 템플릿:
+Template:
 
 ```text
 data/approval_queue_template.csv
 ```
 
-OwnerDecision 값은 아래 중 하나로만 쓴다.
+Allowed `OwnerDecision` values:
 
 ```text
 APPROVE
@@ -86,7 +86,60 @@ REJECT
 
 ---
 
-## 5. 로그 확인
+## 5. US Trend YouTube Shorts Automation
+
+The manual GitHub Actions workflow creates one vertical Short from the current US YouTube popular chart.
+
+```text
+.github/workflows/youtube-trend-short.yml
+```
+
+Default behavior:
+
+- Reads YouTube Data API `videos.list` with `chart=mostPopular`, `regionCode=US`, and `videoCategoryId=0`.
+- Does not download or reuse the original YouTube video, audio, transcript, or thumbnail.
+- Uses Gemini for a Korean/English commentary script when available; otherwise uses a safe fallback script.
+- Uses `edge-tts`, Pillow, MoviePy, and FFmpeg to render a 1080x1920 MP4 plus thumbnail artifact.
+- Allows public upload only when `confirm_public_upload` is exactly `PUBLIC_UPLOAD`.
+
+Required GitHub repository secrets:
+
+```text
+YOUTUBE_API_KEY
+YOUTUBE_CLIENT_ID
+YOUTUBE_CLIENT_SECRET
+YOUTUBE_REFRESH_TOKEN
+GEMINI_API_KEY
+```
+
+Optional repository variable:
+
+```text
+GEMINI_MODEL=gemini-1.5-flash
+```
+
+Local dry run:
+
+```powershell
+python -m pip install -r requirements.txt
+python scripts/youtube_trend_short.py --dry-run --skip-upload
+```
+
+Public upload flow:
+
+1. Run the `YouTube Trend Short` workflow manually in GitHub Actions.
+2. Set `dry_run=false`.
+3. Keep `privacy_status=public`.
+4. Enter `confirm_public_upload=PUBLIC_UPLOAD`.
+
+Important:
+
+- YouTube may restrict uploads from unverified API projects created after 2020-07-28 to private visibility. If that happens, the workflow should fail instead of silently bypassing the public-upload requirement.
+- The upload metadata sets `containsSyntheticMedia=true`, `selfDeclaredMadeForKids=false`, and adds an AI-assisted original-commentary disclosure.
+
+---
+
+## 6. Logs
 
 ```powershell
 cd C:\codetest\ai_media_agent
@@ -96,7 +149,7 @@ docker compose logs n8n --tail=150
 
 ---
 
-## 6. 중지
+## 7. Stop
 
 ```powershell
 cd C:\codetest\ai_media_agent
@@ -105,19 +158,18 @@ docker compose down
 
 ---
 
-## 7. 현재 범위
+## 8. Current Scope
 
-현재 mock mode는 다음만 수행한다.
+Current capabilities:
 
-- AI툴/SaaS 주제 mock scoring
-- 콘텐츠 승인 큐 mock generation
-- 주간 보고서 mock generation
-- approval queue 템플릿 제공
+- AI tools and SaaS topic mock scoring
+- Content approval queue mock generation
+- Weekly report mock generation
+- Approval queue template
+- US trend YouTube Shorts generation/upload workflow
 
-실제 외부 API 연결은 다음 단계다.
+Next useful upgrades:
 
-- OpenAI API
-- YouTube API
-- Google Sheets API
-- Telegram Bot
-- 제휴 링크 데이터
+- Connect the Google Sheets approval queue to the Shorts workflow
+- Add Telegram approval notifications
+- Add affiliate-link data
