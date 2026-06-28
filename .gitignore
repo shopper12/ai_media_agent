@@ -4,6 +4,10 @@ node_modules/
 *.log
 .DS_Store
 __pycache__/
+.pytest_cache/
+out/
+*.mp3
+*.mp4
 
 # Local credentials / browser sessions
 browser_session_state.json
